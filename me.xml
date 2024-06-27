@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE student PUBLIC "-//Joy of Coding at PSU//DTD Grade Book//EN" "http://www.cs.pdx.edu/~whitlock/dtds/gradebook.dtd">
+<student enrolled-section="undergraduate">
+<id>alans</id>
+<firstName>Alan</firstName>
+<lastName>Shirk</lastName>
+<email>alans@pdx.edu</email>
+<major>Computer Science</major>
+<github-user-name>ashirk94</github-user-name>
+<notes>
+<note>Alan Shirk would like to learn I hope to learn a solid amount of Java and Android development so that I can determine if I enjoy that type of development.</note>
+</notes>
+</student>
