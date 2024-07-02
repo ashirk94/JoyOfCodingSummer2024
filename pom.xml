@@ -20,7 +20,7 @@ accordingly
       
   </parent>
     
-  <groupId>edu.pdx.cs.joy.YourUserId</groupId>
+  <groupId>edu.pdx.cs.joy.alans</groupId>
     
   <artifactId>JoyOfCoding</artifactId>
     
@@ -32,7 +32,7 @@ accordingly
     
   <description>Source code written in the Summer 2024 offering of The Joy of Coding</description>
     
-  <url>http://YourGitHubUserInLowerCase.github.io/JoyOfCodingSummer2024</url>
+  <url>http://ashirk94.github.io/JoyOfCodingSummer2024</url>
     
   <modules>
         
@@ -54,7 +54,7 @@ accordingly
         
     <system>github</system>
         
-    <url>https://github.com/YourGitHubUser/JoyOfCodingSummer2024/issues</url>
+    <url>https://github.com/ashirk94/JoyOfCodingSummer2024/issues</url>
       
   </issueManagement>
     
@@ -166,7 +166,7 @@ accordingly
     
   <scm>
         
-    <connection>scm:git:git@github.com:YourGithubUser/JoyOfCodingSummer2024.git</connection>
+    <connection>scm:git:git@github.com:ashirk94/JoyOfCodingSummer2024.git</connection>
       
   </scm>
     
@@ -186,7 +186,7 @@ accordingly
             
       <name>GitHub Pages</name>
             
-      <url>scm:git:git@github.com:YourGithubUser/JoyOfCodingSummer2024.git</url>
+      <url>scm:git:git@github.com:ashirk94/JoyOfCodingSummer2024.git</url>
           
     </site>
       

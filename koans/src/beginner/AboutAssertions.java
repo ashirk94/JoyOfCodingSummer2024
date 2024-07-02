@@ -10,19 +10,19 @@ public class AboutAssertions {
     @Koan
     public void assertBooleanTrue() {
         // there are two possibilities, true or false, what would it be here?
-        assertTrue(__);
+        assertTrue(true);
     }
 
     @Koan
     public void assertBooleanFalse() {
-        assertFalse(__);
+        assertFalse(false);
     }
 
     @Koan
     public void assertNullObject() {
         // reference to the object can be null, a magic keyword, null, which means
         // that there is nothing there
-        assertNull(__);
+        assertNull(null);
     }
 
     @Koan
