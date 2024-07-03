@@ -5,10 +5,14 @@ import edu.pdx.cs.joy.lang.Human;
 import java.util.ArrayList;
                                                                                     
 /**                                                                                 
- * This class is represents a <code>Student</code>.                                 
+ * This class represents a <code>Student</code>.
  */                                                                                 
-public class Student extends Human {                                                
-                                                                                    
+public class Student extends Human {
+
+  private ArrayList<String> classes;
+  private double gpa;
+  private String gender;
+
   /**                                                                               
    * Creates a new <code>Student</code>                                             
    *                                                                                
@@ -20,10 +24,22 @@ public class Student extends Human {
    * @param gpa                                                                     
    *        The student's grade point average                                       
    * @param gender                                                                  
-   *        The student's gender ("male", "female", or "other", case insensitive)
-   */                                                                               
+   *        The student's gender ("male", "female", or "other", case in-sensitive)
+   */
+
   public Student(String name, ArrayList<String> classes, double gpa, String gender) {
     super(name);
+    this.classes = classes;
+    this.gpa = validateGpa(gpa);
+    this.gender = gender;
+  }
+
+  private double validateGpa(double gpa) {
+    if (gpa < 4.0 && gpa >= 0.0) {
+      return gpa;
+    } else {
+      throw new IllegalArgumentException();
+    }
   }
 
   /**                                                                               
@@ -31,7 +47,7 @@ public class Student extends Human {
    */
   @Override
   public String says() {                                                            
-    throw new UnsupportedOperationException("Not implemented yet");
+    return "This class is too much work";
   }
                                                                                     
   /**                                                                               
@@ -39,7 +55,7 @@ public class Student extends Human {
    * <code>Student</code>.                                                          
    */                                                                               
   public String toString() {
-    throw new UnsupportedOperationException("Not implemented yet");
+    return name + " has a GPA of " + gpa;
   }
 
   /**
