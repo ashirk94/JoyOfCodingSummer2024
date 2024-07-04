@@ -34,22 +34,23 @@ public class AboutAssertions {
     @Koan
     public void assertNotNullObject() {
         // but what when there should not be a null value?
-        assertNotNull(null);
+        Object someObject = new Object();
+        assertNotNull(someObject);
     }
 
     @Koan
     public void assertEqualsUsingExpression() {
-        assertTrue("Hello World!".equals(__));
+        assertTrue("Hello World!".equals("Hello World!"));
     }
 
     @Koan
     public void assertEqualsWithAFewExpressions() {
-        assertEquals("Hello World!", __);
-        assertEquals(1, __);
-        assertEquals(2 + 2, __);
-        assertEquals(2 * 3, __);
-        assertEquals(3 - 8, __);
-        assertEquals(10 / 2, __);
+        assertEquals("Hello World!", "Hello World!");
+        assertEquals(1, 1);
+        assertEquals(2 + 2, 4);
+        assertEquals(2 * 3, 6);
+        assertEquals(3 - 8, -5);
+        assertEquals(10 / 2, 5);
     }
 
     @Koan
@@ -57,7 +58,7 @@ public class AboutAssertions {
         // Generally, when using an assertXXX methods, expectation is on the
         // left and it is best practice to use a String for the first arg
         // indication what has failed
-        assertEquals("The answer to 'life the universe and everything' should be 42", 42, __);
+        assertEquals("The answer to 'life the universe and everything' should be 42", 42, 42);
     }
 
     @Koan
@@ -69,7 +70,7 @@ public class AboutAssertions {
         assertEquals(original, same);
         assertEquals(original, different);
         // ...but only one refers to the same instance as the original.
-        assertSame(original, __);
+        assertSame(original, same);
     }
 
     @Koan
@@ -81,6 +82,6 @@ public class AboutAssertions {
         assertEquals(original, same);
         assertEquals(original, different);
         // ...but only one of them refers to a different instance.
-        assertNotSame(original, same);  // We want equal, but _not_ the same.
+        assertNotSame(original, different);  // We want equal, but _not_ the same.
     }
 }

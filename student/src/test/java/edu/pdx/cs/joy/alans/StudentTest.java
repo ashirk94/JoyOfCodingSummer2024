@@ -23,7 +23,7 @@ public class StudentTest
   @Test
   void studentNamedPatIsNamedPat() {
     String name = "Pat";
-    var pat = new Student(name, new ArrayList<>(), 0.0, "Doesn't matter");
+    var pat = createStudent(name);
     assertThat(pat.getName(), equalTo(name));
   }
 

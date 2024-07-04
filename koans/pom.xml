@@ -31,9 +31,9 @@
       </roles>
     </developer>
     <developer>
-      <id>YOU</id>
-      <name>Your name here</name>
-      <email>you@youremail.com</email>
+      <id>alans</id>
+      <name>Alan Shirk</name>
+      <email>alans@pdx.edu</email>
       <url>http://www.cs.pdx.edu/~YOU</url>
       <organization>PSU Department of Computer Science</organization>
       <organizationUrl>http://www.cs.pdx.edu</organizationUrl>
