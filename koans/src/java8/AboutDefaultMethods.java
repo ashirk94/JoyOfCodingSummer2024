@@ -17,24 +17,24 @@ public class AboutDefaultMethods {
         };
         String capitalizedReversed = stringUtil.capitalize(
                 stringUtil.reverse("gnirut"));
-        assertEquals(capitalizedReversed, __);
+        assertEquals(capitalizedReversed, "TURING");
     }
 
     @Koan
     public void interfaceStaticMethod() {
-        assertEquals(StringUtil.enclose("me"), __);
+        assertEquals(StringUtil.enclose("me"), "[me]");
     }
 
     interface StringUtil {
 
-        //static method in interface
+        // static method in interface
         static String enclose(String in) {
             return "[" + in + "]";
         }
 
         String reverse(String s);
 
-        //interface can contain non-abstract method implementations marked by "default" keyword
+        // interface can contain non-abstract method implementations marked by "default" keyword
         default String capitalize(String s) {
             return s.toUpperCase();
         }

@@ -15,28 +15,26 @@ public class AboutLocale {
     @Koan
     public void localizedOutputOfDates() {
         Calendar cal = Calendar.getInstance();
-        cal.set(2011, 3, 3);
+        cal.set(2011, 3, 3); // Note: Months are 0-based, so 3 means April.
         Date date = cal.getTime();
-        Locale localeBR = new Locale("pt", "BR"); // portuguese, Brazil
+        Locale localeBR = new Locale("pt", "BR"); // Portuguese, Brazil
         DateFormat dateformatBR = DateFormat.getDateInstance(DateFormat.FULL, localeBR);
-        assertEquals(dateformatBR.format(date), __);
+        assertEquals(dateformatBR.format(date), "domingo, 3 de abril de 2011");
 
-        Locale localeJA = new Locale("de"); // German
-        DateFormat dateformatJA = DateFormat.getDateInstance(DateFormat.FULL, localeJA);
-        // Well if you don't know how to type these characters, try "de", "it" or "us" ;-)
-        assertEquals(dateformatJA.format(date), __);
+        Locale localeDE = new Locale("de"); // German
+        DateFormat dateformatDE = DateFormat.getDateInstance(DateFormat.FULL, localeDE);
+        assertEquals(dateformatDE.format(date), "Sonntag, 3. April 2011");
     }
 
     @Koan
     public void getCountryInformation() {
         Locale locBR = new Locale("pt", "BR");
-        assertEquals(locBR.getDisplayCountry(), __);
-        assertEquals(locBR.getDisplayCountry(locBR), __);
+        assertEquals(locBR.getDisplayCountry(), "Brazil");
+        assertEquals(locBR.getDisplayCountry(locBR), "Brasil");
 
         Locale locCH = new Locale("it", "CH");
-        assertEquals(locCH.getDisplayCountry(), __);
-        assertEquals(locCH.getDisplayCountry(locCH), __);
-        assertEquals(locCH.getDisplayCountry(new Locale("de", "CH")), __);
+        assertEquals(locCH.getDisplayCountry(), "Switzerland");
+        assertEquals(locCH.getDisplayCountry(locCH), "Svizzera");
+        assertEquals(locCH.getDisplayCountry(new Locale("de", "CH")), "Schweiz");
     }
-
 }

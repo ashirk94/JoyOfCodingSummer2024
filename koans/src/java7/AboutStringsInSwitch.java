@@ -16,15 +16,17 @@ public class AboutStringsInSwitch {
             switch (animal) {
                 case "Tiger":
                     dangerous = animal;
+                    break;
                 case "Dog":
                 case "Cat":
                 case "Elephant":
                 case "Zebra":
                     notDangerous = animal;
+                    break;
             }
         }
-        assertEquals(notDangerous, __);
-        assertEquals(dangerous, __);
+        assertEquals(notDangerous, "Zebra");
+        assertEquals(dangerous, "Tiger");
     }
 
 }

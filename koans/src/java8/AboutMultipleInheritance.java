@@ -20,8 +20,8 @@ public class AboutMultipleInheritance {
     }
 
     class Minotaur implements Human, Bull {
-        //both interfaces implement same default method
-        //has to be overridden
+        // both interfaces implement the same default method
+        // has to be overridden
         @Override
         public String sound() {
             return Bull.super.sound();
@@ -31,7 +31,7 @@ public class AboutMultipleInheritance {
     @Koan
     public void multipleInheritance() {
         Minotaur minotaur = new Minotaur();
-        assertEquals(minotaur.sound(), __);
+        assertEquals(minotaur.sound(), "moo");
     }
 
 }

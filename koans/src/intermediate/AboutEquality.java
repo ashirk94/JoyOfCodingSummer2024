@@ -12,20 +12,20 @@ public class AboutEquality {
     public void sameObject() {
         Object a = new Object();
         Object b = a;
-        assertEquals(a == b, __);
+        assertEquals(a == b, true);
     }
 
     @Koan
     public void equalObject() {
         Integer a = new Integer(1);
         Integer b = new Integer(1);
-        assertEquals(a.equals(b), __);
-        assertEquals(b.equals(a), __);
+        assertEquals(a.equals(b), true);
+        assertEquals(b.equals(a), true);
     }
 
     @Koan
     public void noObjectShouldBeEqualToNull() {
-        assertEquals(new Object().equals(null), __);
+        assertEquals(new Object().equals(null), false);
     }
 
     static class Car {
@@ -39,16 +39,17 @@ public class AboutEquality {
 
         @Override
         public boolean equals(Object other) {
-            // Change this implementation to match the equals contract
-            // Car objects with same horsepower and name values should be considered equal
-            // http://download.oracle.com/javase/6/docs/api/java/lang/Object.html#equals(java.lang.Object)
-            return false;
+            if (this == other) return true;
+            if (other == null || getClass() != other.getClass()) return false;
+            Car car = (Car) other;
+            return horsepower == car.horsepower && name.equals(car.name);
         }
 
         @Override
         public int hashCode() {
-            // @see http://download.oracle.com/javase/6/docs/api/java/lang/Object.html#hashCode()
-            return super.hashCode();
+            int result = name.hashCode();
+            result = 31 * result + horsepower;
+            return result;
         }
     }
 
@@ -56,7 +57,6 @@ public class AboutEquality {
     public void equalForOwnObjects() {
         Car car1 = new Car("Beetle", 50);
         Car car2 = new Car("Beetle", 50);
-        // @see Car.equals (around line 45) for the place to solve this
         assertEquals(car1.equals(car2), true);
         assertEquals(car2.equals(car1), true);
     }
@@ -65,7 +65,6 @@ public class AboutEquality {
     public void unequalForOwnObjects() {
         Car car1 = new Car("Beetle", 50);
         Car car2 = new Car("Porsche", 300);
-        // @see Car.equals (around line 45) for the place to solve this
         assertEquals(car1.equals(car2), false);
     }
 
@@ -73,25 +72,17 @@ public class AboutEquality {
     public void unequalForOwnObjectsWithDifferentType() {
         Car car1 = new Car("Beetle", 50);
         String s = "foo";
-        // @see Car.equals (around line 45) for the place to solve this
         assertEquals(car1.equals(s), false);
     }
 
     @Koan
     public void equalNullForOwnObjects() {
         Car car1 = new Car("Beetle", 50);
-        // @see Car.equals (around line 45) for the place to solve this
         assertEquals(car1.equals(null), false);
     }
 
     @Koan
     public void ownHashCode() {
-        // As a general rule: When you override equals you should override
-        // hash code
-        // Read the hash code contract to figure out why
-        // http://download.oracle.com/javase/6/docs/api/java/lang/Object.html#hashCode()
-
-        // Implement Car.hashCode around line 51 so that the following assertions pass
         Car car1 = new Car("Beetle", 50);
         Car car2 = new Car("Beetle", 50);
         assertEquals(car1.equals(car2), true);
@@ -103,7 +94,7 @@ public class AboutEquality {
 
         @Override
         public int hashCode() {
-            return 4000;
+            return color.hashCode();
         }
 
         @Override
@@ -119,10 +110,8 @@ public class AboutEquality {
         Chicken chicken1 = new Chicken();
         chicken1.color = "black";
         Chicken chicken2 = new Chicken();
-        assertEquals(chicken1.equals(chicken2), __);
-        assertEquals(chicken1.hashCode() == chicken2.hashCode(), __);
-        // Does this still fit the hashCode contract? Why (not)?
-        // Fix the Chicken class to correct this.
+        assertEquals(chicken1.equals(chicken2), false);
+        assertEquals(chicken1.hashCode() == chicken2.hashCode(), false);
     }
 
 }
