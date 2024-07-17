@@ -2,13 +2,16 @@ package edu.pdx.cs.joy.alans;
 
 import edu.pdx.cs.joy.AbstractPhoneBill;
 
+import java.util.ArrayList;
 import java.util.Collection;
 
 public class PhoneBill extends AbstractPhoneBill<PhoneCall> {
   private final String customer;
+  private final Collection<PhoneCall> phoneCalls;
 
   public PhoneBill(String customer) {
     this.customer = customer;
+    this.phoneCalls = new ArrayList<>();
   }
 
   @Override
@@ -18,11 +21,11 @@ public class PhoneBill extends AbstractPhoneBill<PhoneCall> {
 
   @Override
   public void addPhoneCall(PhoneCall call) {
-    throw new UnsupportedOperationException("This method is not implemented yet");
+    this.phoneCalls.add(call);
   }
 
   @Override
   public Collection<PhoneCall> getPhoneCalls() {
-    throw new UnsupportedOperationException("This method is not implemented yet");
+    return this.phoneCalls;
   }
 }

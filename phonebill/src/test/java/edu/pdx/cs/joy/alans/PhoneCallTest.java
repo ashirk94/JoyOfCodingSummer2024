@@ -1,42 +1,43 @@
 package edu.pdx.cs.joy.alans;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeEach;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Unit tests for the {@link PhoneCall} class.
- *
- * You'll need to update these unit tests as you build out your program.
  */
 public class PhoneCallTest {
 
-  /**
-   * This unit test will need to be modified (likely deleted) as you implement
-   * your project.
-   */
-  @Test
-  void getBeginTimeStringNeedsToBeImplemented() {
-    PhoneCall call = new PhoneCall();
-    assertThrows(UnsupportedOperationException.class, call::getBeginTimeString);
-  }
+  private PhoneCall call;
+  private final String caller = "555-555-5555";
+  private final String callee = "777-777-7777";
+  private final String beginTime = "07/16/2024 14:00";
+  private final String endTime = "07/16/2024 15:00";
 
-  /**
-   * This unit test will need to be modified (likely deleted) as you implement
-   * your project.
-   */
-  @Test
-  void initiallyAllPhoneCallsHaveTheSameCallee() {
-    PhoneCall call = new PhoneCall();
-    assertThat(call.getCallee(), containsString("not implemented"));
+  @BeforeEach
+  void setUp() {
+    call = new PhoneCall(caller, callee, beginTime, endTime);
   }
 
   @Test
-  void forProject1ItIsOkayIfGetBeginTimeReturnsNull() {
-    PhoneCall call = new PhoneCall();
-    assertThat(call.getBeginTime(), is(nullValue()));
+  void getCallerReturnsCallerPhoneNumber() {
+    assertEquals(caller, call.getCaller());
   }
-  
+
+  @Test
+  void getCalleeReturnsCalleePhoneNumber() {
+    assertEquals(callee, call.getCallee());
+  }
+
+  @Test
+  void getBeginTimeStringReturnsCorrectBeginTime() {
+    assertEquals(beginTime, call.getBeginTimeString());
+  }
+
+  @Test
+  void getEndTimeStringReturnsCorrectEndTime() {
+    assertEquals(endTime, call.getEndTimeString());
+  }
 }
