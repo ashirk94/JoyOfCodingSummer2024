@@ -2,40 +2,93 @@ package edu.pdx.cs.joy.alans;
 
 import com.google.common.annotations.VisibleForTesting;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.List;
+
 /**
- * The main class for the Phone Bill Project
+ * This class contains the starting point for the program. It parses command line arguments,
+ * creates a PhoneBill and a PhoneCall object, adds the PhoneCall to the PhoneBill, and optionally
+ * prints a description of the PhoneCall. It also can print the README.
  */
 public class Project1 {
 
+  /**
+   * Uses a regular expression to check if the phone number is valid.
+   *
+   * @param phoneNumber The phone number to validate.
+   * @return true if the phone number is valid, false otherwise.
+   */
   @VisibleForTesting
   static boolean isValidPhoneNumber(String phoneNumber) {
     return phoneNumber.matches("\\d{3}-\\d{3}-\\d{4}");
   }
 
+  /**
+   * Uses a regular expression to check if the date and time are both valid.
+   *
+   * @param date The date to validate.
+   * @param time The time to validate.
+   * @return true if the date and time are valid, false otherwise.
+   */
   @VisibleForTesting
   static boolean isValidDateTime(String date, String time) {
     return date.matches("\\d{1,2}/\\d{1,2}/\\d{4}") && time.matches("\\d{1,2}:\\d{2}");
   }
 
+  /**
+   * Processes the command line arguments and contains the primary logic for the program.
+   * It checks for the -print and -README flags and creates the PhoneBill and PhoneCall objects.
+   * It also handles errors and invalid arguments.
+   *
+   * @param args Command line arguments.
+   */
   @VisibleForTesting
   static void processArgs(String[] args) {
-    if (args.length < 8) {
-      throw new RuntimeException("Missing command line arguments");
+    boolean printCall = false;
+    List<String> arguments = new ArrayList<>();
+
+    // Checking for README flag and gathering other arguments
+    for (String arg : args) {
+      if (arg.equals("-README")) {
+        printREADME();
+        return; // Stopping the program
+      } else if (arg.equals("-print")) {
+        printCall = true;
+      } else {
+        arguments.add(arg);
+      }
     }
 
-    String customer = args[0];
-    String callerNumber = args[1];
-    String calleeNumber = args[2];
-    String beginDate = args[3];
-    String beginTime = args[4];
-    String endDate = args[5];
-    String endTime = args[6];
+    // Checks for complete arguments for a PhoneCall
+    if (arguments.size() < 7) {
+      System.err.println("Missing command line arguments");
+      throw new RuntimeException("Missing command line arguments");
+    }
+    if (arguments.size() > 7) {
+      System.err.println("Too many arguments");
+      throw new RuntimeException("Too many arguments");
+    }
+
+    // Storing the arguments in variables
+    String customer = arguments.get(0);
+    String callerNumber = arguments.get(1);
+    String calleeNumber = arguments.get(2);
+    String beginDate = arguments.get(3);
+    String beginTime = arguments.get(4);
+    String endDate = arguments.get(5);
+    String endTime = arguments.get(6);
 
     if (!isValidPhoneNumber(callerNumber) || !isValidPhoneNumber(calleeNumber)) {
+      System.err.println("Invalid phone number format");
       throw new RuntimeException("Invalid phone number format");
     }
 
     if (!isValidDateTime(beginDate, beginTime) || !isValidDateTime(endDate, endTime)) {
+      System.err.println("Invalid date/time format");
       throw new RuntimeException("Invalid date/time format");
     }
 
@@ -43,22 +96,26 @@ public class Project1 {
     PhoneCall call = new PhoneCall(callerNumber, calleeNumber, beginDate + " " + beginTime, endDate + " " + endTime);
     bill.addPhoneCall(call);
 
-    boolean printCall = false;
+    if (printCall) {
+      System.out.println(call);
+    }
+  }
+
+  /**
+   * The main method of the program. It invokes the processArgs method and handles any exceptions.
+   *
+   * @param args Command line arguments.
+   */
+  public static void main(String[] args) {
+    // Checking for README flag first
     for (String arg : args) {
-      if (arg.equals("-print")) {
-        printCall = true;
-      } else if (arg.equals("-README")) {
+      if (arg.equals("-README")) {
         printREADME();
         return;
       }
     }
 
-    if (printCall) {
-      System.out.println(call.toString());
-    }
-  }
-
-  public static void main(String[] args) {
+    // Process other arguments
     try {
       processArgs(args);
     } catch (RuntimeException e) {
@@ -66,7 +123,18 @@ public class Project1 {
     }
   }
 
+  /**
+   * Prints the contents of the README.txt file.
+   */
   private static void printREADME() {
-    System.out.println("This is a README file!");
+    try (InputStream readme = Project1.class.getResourceAsStream("/edu/pdx/cs/joy/alans/README.txt");
+         BufferedReader reader = new BufferedReader(new InputStreamReader(readme))) {
+      String line;
+      while ((line = reader.readLine()) != null) {
+        System.out.println(line);
+      }
+    } catch (IOException e) {
+      System.err.println("Error reading README: " + e.getMessage());
+    }
   }
 }
