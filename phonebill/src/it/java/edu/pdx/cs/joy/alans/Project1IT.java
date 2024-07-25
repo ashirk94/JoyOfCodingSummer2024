@@ -1,10 +1,10 @@
 package edu.pdx.cs.joy.alans;
 
-import edu.pdx.cs.joy.InvokeMainTestCase;
-import org.junit.jupiter.api.Test;
-
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
+import org.junit.jupiter.api.Test;
+
+import edu.pdx.cs.joy.InvokeMainTestCase;
 
 /**
  * Tests the functionality in the {@link Project1} main class.

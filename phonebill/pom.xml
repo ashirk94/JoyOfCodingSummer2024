@@ -70,7 +70,7 @@
         <configuration>
           <archive>
             <manifest>
-              <mainClass>edu.pdx.cs.joy.alans.Project1</mainClass>
+              <mainClass>edu.pdx.cs.joy.alans.Project2</mainClass>
             </manifest>
           </archive>
         </configuration>

@@ -40,3 +40,6 @@ dependency-reduced-pom.xml
 # Temporary directories created by the koans
 */app/config/file_hashes.dat
 */app/data/
+
+# VS Code files
+.vscode/
