@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class PhoneCallTest {
     private PhoneCall call;
@@ -46,5 +47,18 @@ public class PhoneCallTest {
     @Test
     void testGetDurationMinutes() {
         assertEquals(60, call.getDurationMinutes());
+    }
+
+    @Test
+    void testPhoneCallComparison() {
+        PhoneCall earlierCall = new PhoneCall("123-456-7890", "234-567-8901",
+                LocalDateTime.parse("07/15/2024 02:00 PM", formatter),
+                LocalDateTime.parse("07/15/2024 03:00 PM", formatter));
+        PhoneCall sameTimeCall = new PhoneCall("000-000-0000", "234-567-8901",
+                LocalDateTime.parse("07/16/2024 02:00 PM", formatter),
+                LocalDateTime.parse("07/16/2024 03:00 PM", formatter));
+
+        assertTrue(call.compareTo(earlierCall) > 0);
+        assertTrue(call.compareTo(sameTimeCall) > 0);
     }
 }

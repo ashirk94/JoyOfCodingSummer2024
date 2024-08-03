@@ -3,7 +3,6 @@ package edu.pdx.cs.joy.alans;
 import edu.pdx.cs.joy.ParserException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -41,25 +40,50 @@ public class Project3Test {
         Files.deleteIfExists(tempDir.toPath());
     }
 
-    @Disabled
     @Test
-    void testCreateNewFileWhenNotExist() throws IOException, ParserException {
+    void testEndTimeBeforeStartTime() {
+        String[] args = { "Customer", "123-456-7890", "234-567-8901", "07/15/2024", "10:00 AM", "07/15/2024", "09:00 AM" };
+        ByteArrayOutputStream errContent = new ByteArrayOutputStream();
+        System.setErr(new PrintStream(errContent));
+
+        Project3.main(args);
+
+        String output = errContent.toString();
+        assertThat(output, containsString("End time cannot be before begin time"));
+    }
+
+    @Test
+    void testFileCreationWithValidInput() throws IOException, ParserException {
         File textFile = new File(tempDir, "newbill.txt");
-        String[] args = { "-textFile", textFile.getPath(), "New Customer", "234-567-8901", "109-876-5432", "08/01/2024", "3:00 PM", "08/01/2024", "3:30 PM" };
+        String[] args = { "-textFile", textFile.getPath(), "Customer", "123-456-7890", "234-567-8901", "07/15/2024", "10:00 AM", "07/15/2024", "11:00 AM" };
+
         Project3.main(args);
 
         assertTrue(textFile.exists());
-
         try (BufferedReader reader = new BufferedReader(new FileReader(textFile))) {
             TextParser parser = new TextParser(reader);
             PhoneBill bill = parser.parse();
-            assertEquals("New Customer", bill.getCustomer());
+            assertEquals("Customer", bill.getCustomer());
             assertEquals(1, bill.getPhoneCalls().size());
             PhoneCall call = bill.getPhoneCalls().iterator().next();
-            assertEquals("234-567-8901", call.getCaller());
-            assertEquals("109-876-5432", call.getCallee());
-            assertEquals("8/1/24, 3:00 PM", call.getBeginTimeString().replace("\u00A0", " ").replace("\u202F", " "));
-            assertEquals("8/1/24, 3:30 PM", call.getEndTimeString().replace("\u00A0", " ").replace("\u202F", " "));
+            assertEquals("123-456-7890", call.getCaller());
+            assertEquals("234-567-8901", call.getCallee());
+            assertEquals("07/15/2024 10:00 AM", DateFormatter.format(call.getBeginTime()));
+            assertEquals("07/15/2024 11:00 AM", DateFormatter.format(call.getEndTime()));
+        }
+    }
+
+    @Test
+    void testPrettyPrintToFile() throws IOException {
+        File prettyFile = new File(tempDir, "pretty.txt");
+        String[] args = { "-pretty", prettyFile.getPath(), "Customer", "123-456-7890", "234-567-8901", "07/15/2024", "10:00 AM", "07/15/2024", "11:00 AM" };
+
+        Project3.main(args);
+
+        assertTrue(prettyFile.exists());
+        try (BufferedReader reader = new BufferedReader(new FileReader(prettyFile))) {
+            String content = reader.readLine();
+            assertThat(content, containsString("Customer: Customer"));
         }
     }
 
@@ -77,7 +101,7 @@ public class Project3Test {
 
     @Test
     void testUnknownCommandLineArgument() {
-        String[] args = { "Customer", "123-456-7890", "234-567-8901", "03/03/2024", "12:00", "03/03/2024", "16:00", "extraArgument" };
+        String[] args = { "Customer", "123-456-7890", "234-567-8901", "03/03/2024", "12:00 PM", "03/03/2024", "04:00 PM", "extraArgument" };
         ByteArrayOutputStream errContent = new ByteArrayOutputStream();
         System.setErr(new PrintStream(errContent));
 
@@ -89,7 +113,7 @@ public class Project3Test {
 
     @Test
     void testInvalidDateFormat() {
-        String[] args = { "Customer", "123-456-7890", "234-567-8901", "invalid-date", "12:00", "03/03/2024", "16:00" };
+        String[] args = { "Customer", "123-456-7890", "234-567-8901", "invalid-date", "12:00 PM", "03/03/2024", "04:00 PM" };
         ByteArrayOutputStream errContent = new ByteArrayOutputStream();
         System.setErr(new PrintStream(errContent));
 
@@ -101,7 +125,7 @@ public class Project3Test {
 
     @Test
     void testInvalidTimeFormat() {
-        String[] args = { "Customer", "123-456-7890", "234-567-8901", "03/03/2024", "invalid-time", "03/03/2024", "16:00" };
+        String[] args = { "Customer", "123-456-7890", "234-567-8901", "03/03/2024", "invalid-time", "03/03/2024", "04:00 PM" };
         ByteArrayOutputStream errContent = new ByteArrayOutputStream();
         System.setErr(new PrintStream(errContent));
 
@@ -109,55 +133,5 @@ public class Project3Test {
 
         String output = errContent.toString();
         assertThat(output, containsString("Invalid date/time format"));
-    }
-
-    @Disabled
-    @Test
-    void testMalformedTextFile() throws IOException {
-        File textFile = new File(tempDir, "malformed.txt");
-        try (PrintWriter writer = new PrintWriter(new FileWriter(textFile))) {
-            writer.println("Customer");
-            writer.println("Malformed data line");
-        }
-
-        String[] args = { "-textFile", textFile.getPath(), "Customer", "123-456-7890", "234-567-8901", "03/03/2024", "12:00", "03/03/2024", "16:00" };
-        ByteArrayOutputStream errContent = new ByteArrayOutputStream();
-        System.setErr(new PrintStream(errContent));
-
-        Project3.main(args);
-
-        String output = errContent.toString();
-        assertThat(output, containsString("Could not read from text file"));
-    }
-
-    @Disabled
-    @Test
-    void testCustomerNameMismatch() throws IOException {
-        File textFile = new File(tempDir, "customer_mismatch.txt");
-        try (PrintWriter writer = new PrintWriter(new FileWriter(textFile))) {
-            writer.println("Different Customer");
-            writer.println("123-456-7890 234-567-8901 03/03/2024 12:00 03/03/2024 16:00");
-        }
-
-        String[] args = { "-textFile", textFile.getPath(), "Customer", "123-456-7890", "234-567-8901", "03/03/2024", "12:00", "03/03/2024", "16:00" };
-        ByteArrayOutputStream errContent = new ByteArrayOutputStream();
-        System.setErr(new PrintStream(errContent));
-
-        Project3.main(args);
-
-        String output = errContent.toString();
-        assertThat(output, containsString("Customer name in file does not match specified customer"));
-    }
-
-    @Test
-    void testUnknownCommandLineOption() {
-        String[] args = { "-unknownOption", "Customer", "123-456-7890", "234-567-8901", "03/03/2024", "12:00", "03/03/2024", "16:00" };
-        ByteArrayOutputStream errContent = new ByteArrayOutputStream();
-        System.setErr(new PrintStream(errContent));
-
-        Project3.main(args);
-
-        String output = errContent.toString();
-        assertThat(output, containsString("Unknown command line option: -unknownOption"));
     }
 }

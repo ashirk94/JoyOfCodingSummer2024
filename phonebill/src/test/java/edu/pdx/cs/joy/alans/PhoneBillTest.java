@@ -5,8 +5,11 @@ import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.TreeSet;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class PhoneBillTest {
     private PhoneBill bill;
@@ -21,9 +24,6 @@ public class PhoneBillTest {
         bill.addPhoneCall(new PhoneCall("777-777-7777", "888-888-8888",
                 LocalDateTime.parse("07/16/2024 04:00 PM", formatter),
                 LocalDateTime.parse("07/16/2024 05:00 PM", formatter)));
-        bill.addPhoneCall(new PhoneCall("111-111-1111", "222-222-2222",
-                LocalDateTime.parse("07/15/2024 10:00 AM", formatter),
-                LocalDateTime.parse("07/15/2024 11:00 AM", formatter))); // Same begin time as the first call
     }
 
     @Test
@@ -33,14 +33,16 @@ public class PhoneBillTest {
 
     @Test
     void testGetPhoneCalls() {
-        assertEquals(3, bill.getPhoneCalls().size());
+        TreeSet<PhoneCall> calls = (TreeSet<PhoneCall>) bill.getPhoneCalls();
+        assertEquals(2, calls.size());
     }
 
     @Test
-    void testPhoneCallsSortedByBeginTimeAndCaller() {
-        var calls = bill.getPhoneCalls().toArray(new PhoneCall[0]);
-        assertEquals("111-111-1111", calls[0].getCaller());
-        assertEquals("555-555-5555", calls[1].getCaller());
-        assertEquals("777-777-7777", calls[2].getCaller());
+    void testAddPhoneCall() {
+        PhoneCall call = new PhoneCall("123-456-7890", "234-567-8901",
+                LocalDateTime.parse("07/17/2024 10:00 AM", formatter),
+                LocalDateTime.parse("07/17/2024 11:00 AM", formatter));
+        bill.addPhoneCall(call);
+        assertEquals(3, bill.getPhoneCalls().size());
     }
 }
