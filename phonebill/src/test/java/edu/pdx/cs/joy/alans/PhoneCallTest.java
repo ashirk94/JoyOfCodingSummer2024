@@ -1,43 +1,50 @@
 package edu.pdx.cs.joy.alans;
 
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-/**
- * Unit tests for the {@link PhoneCall} class.
- */
 public class PhoneCallTest {
+    private PhoneCall call;
+    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy hh:mm a");
 
-  private PhoneCall call;
-  private final String caller = "555-555-5555";
-  private final String callee = "777-777-7777";
-  private final String beginTime = "07/16/2024 14:00";
-  private final String endTime = "07/16/2024 15:00";
+    @BeforeEach
+    void setUp() {
+        call = new PhoneCall("123-456-7890", "234-567-8901",
+                LocalDateTime.parse("07/16/2024 02:00 PM", formatter),
+                LocalDateTime.parse("07/16/2024 03:00 PM", formatter));
+    }
 
-  @BeforeEach
-  void setUp() {
-    call = new PhoneCall(caller, callee, beginTime, endTime);
-  }
+    @Test
+    void testGetBeginTimeString() {
+        String expected = "7/16/24, 2:00 PM";
+        String actual = call.getBeginTimeString().replace("\u202F", " ");
+        assertEquals(expected, actual);
+    }
 
-  @Test
-  void getCallerReturnsCallerPhoneNumber() {
-    assertEquals(caller, call.getCaller());
-  }
+    @Test
+    void testGetEndTimeString() {
+        String expected = "7/16/24, 3:00 PM";
+        String actual = call.getEndTimeString().replace("\u202F", " ");
+        assertEquals(expected, actual);
+    }
 
-  @Test
-  void getCalleeReturnsCalleePhoneNumber() {
-    assertEquals(callee, call.getCallee());
-  }
+    @Test
+    void testGetCaller() {
+        assertEquals("123-456-7890", call.getCaller());
+    }
 
-  @Test
-  void getBeginTimeStringReturnsCorrectBeginTime() {
-    assertEquals(beginTime, call.getBeginTimeString());
-  }
+    @Test
+    void testGetCallee() {
+        assertEquals("234-567-8901", call.getCallee());
+    }
 
-  @Test
-  void getEndTimeStringReturnsCorrectEndTime() {
-    assertEquals(endTime, call.getEndTimeString());
-  }
+    @Test
+    void testGetDurationMinutes() {
+        assertEquals(60, call.getDurationMinutes());
+    }
 }

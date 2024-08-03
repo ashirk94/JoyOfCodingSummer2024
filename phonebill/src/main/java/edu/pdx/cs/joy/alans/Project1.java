@@ -1,13 +1,15 @@
 package edu.pdx.cs.joy.alans;
 
-import com.google.common.annotations.VisibleForTesting;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+
+import com.google.common.annotations.VisibleForTesting;
 
 /**
  * This class contains the starting point for the program. It parses command line arguments,
@@ -15,7 +17,7 @@ import java.util.List;
  * prints a description of the PhoneCall. It also can print the README.
  */
 public class Project1 {
-
+    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy hh:mm a");
   /**
    * Uses a regular expression to check if the phone number is valid.
    *
@@ -77,23 +79,17 @@ public class Project1 {
     String customer = arguments.get(0);
     String callerNumber = arguments.get(1);
     String calleeNumber = arguments.get(2);
-    String beginDate = arguments.get(3);
-    String beginTime = arguments.get(4);
-    String endDate = arguments.get(5);
-    String endTime = arguments.get(6);
+    LocalDateTime beginTime = LocalDateTime.parse(args[3] + " " + args[4], formatter);
+    LocalDateTime endTime = LocalDateTime.parse(args[5] + " " + args[6], formatter);
 
     if (!isValidPhoneNumber(callerNumber) || !isValidPhoneNumber(calleeNumber)) {
       System.err.println("Invalid phone number format");
       throw new RuntimeException("Invalid phone number format");
     }
 
-    if (!isValidDateTime(beginDate, beginTime) || !isValidDateTime(endDate, endTime)) {
-      System.err.println("Invalid date/time format");
-      throw new RuntimeException("Invalid date/time format");
-    }
 
     PhoneBill bill = new PhoneBill(customer);
-    PhoneCall call = new PhoneCall(callerNumber, calleeNumber, beginDate + " " + beginTime, endDate + " " + endTime);
+    PhoneCall call = new PhoneCall(callerNumber, calleeNumber, beginTime, endTime);
     bill.addPhoneCall(call);
 
     if (printCall) {

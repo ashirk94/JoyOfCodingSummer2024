@@ -2,7 +2,7 @@ package edu.pdx.cs.joy.alans;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.io.Writer;
+import java.time.format.DateTimeFormatter;
 
 import edu.pdx.cs.joy.PhoneBillDumper;
 
@@ -10,14 +10,15 @@ import edu.pdx.cs.joy.PhoneBillDumper;
  * A class that dumps the contents of a PhoneBill to a text file.
  */
 public class TextDumper implements PhoneBillDumper<PhoneBill> {
-  private final Writer writer;
+  private final PrintWriter writer;
+  private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy hh:mm a");
 
   /**
    * Constructs a new TextDumper that writes to the given Writer.
    * 
    * @param writer The writer to which the PhoneBill will be dumped
    */
-  public TextDumper(Writer writer) {
+  public TextDumper(PrintWriter writer) {
     this.writer = writer;
   }
 
@@ -25,16 +26,18 @@ public class TextDumper implements PhoneBillDumper<PhoneBill> {
    * Dumps the contents of a PhoneBill to the writer.
    * 
    * @param bill The PhoneBill to be dumped
-   * @throws IOException If an I/O error occurs while writing to the file
    */
-  @Override
-  public void dump(PhoneBill bill) throws IOException {
-    try (PrintWriter pw = new PrintWriter(this.writer)) {
-      pw.println(bill.getCustomer());
-      for (PhoneCall call : bill.getPhoneCalls()) {
-        pw.println(call.getCaller() + "," + call.getCallee() + "," + call.getBeginTimeString() + "," + call.getEndTimeString());
-      }
-      pw.flush();
+    @Override
+    public void dump(PhoneBill bill) {
+        writer.println(bill.getCustomer());
+        for (PhoneCall call : bill.getPhoneCalls()) {
+            writer.println(String.format("%s,%s,%s,%s",
+                    call.getCaller(),
+                    call.getCallee(),
+                    call.getBeginTime().format(formatter),
+                    call.getEndTime().format(formatter)));
+        }
+        writer.flush();
+        writer.close();
     }
-  }
 }

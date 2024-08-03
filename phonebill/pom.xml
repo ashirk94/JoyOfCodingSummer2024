@@ -24,7 +24,7 @@
       <id>alans</id>
       <name>Alan Shirk</name>
       <email>alans@pdx.edu</email>
-      <url>http://www.cs.pdx.edu/~YOU</url>
+      <url>http://www.cs.pdx.edu/~alans</url>
       <organization>PSU Department of Computer Science</organization>
       <organizationUrl>http://www.cs.pdx.edu</organizationUrl>
       <roles>
@@ -70,7 +70,7 @@
         <configuration>
           <archive>
             <manifest>
-              <mainClass>edu.pdx.cs.joy.alans.Project2</mainClass>
+              <mainClass>edu.pdx.cs.joy.alans.Project3</mainClass>
             </manifest>
           </archive>
         </configuration>
