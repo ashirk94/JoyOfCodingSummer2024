@@ -61,4 +61,21 @@ public class PhoneCallTest {
         assertTrue(call.compareTo(earlierCall) > 0);
         assertTrue(call.compareTo(sameTimeCall) > 0);
     }
+
+    @Test
+    void testPhoneCallDuration() {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy hh:mm a");
+        PhoneCall call = new PhoneCall("111-111-1111", "222-222-2222", LocalDateTime.parse("07/15/2024 10:00 AM", formatter), LocalDateTime.parse("07/15/2024 11:00 AM", formatter));
+        assertEquals(60, call.getDurationMinutes());
+    }
+
+    @Test
+    void testPhoneCallComparisonWithSameTime() {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy hh:mm a");
+        PhoneCall call1 = new PhoneCall("111-111-1111", "222-222-2222", LocalDateTime.parse("07/15/2024 10:00 AM", formatter), LocalDateTime.parse("07/15/2024 11:00 AM", formatter));
+        PhoneCall call2 = new PhoneCall("333-333-3333", "444-444-4444", LocalDateTime.parse("07/15/2024 10:00 AM", formatter), LocalDateTime.parse("07/15/2024 11:00 AM", formatter));
+
+        assertTrue(call1.compareTo(call2) < 0);
+    }
+
 }

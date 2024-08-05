@@ -43,7 +43,12 @@ dependency-reduced-pom.xml
 
 # VS Code files
 .vscode/
+
+# printing files
 phonebill/newbill.txt
 phonebill/prettybill.txt
 phonebill/pretty.txt
 phonebill/bill.txt
+testfile.txt
+
+

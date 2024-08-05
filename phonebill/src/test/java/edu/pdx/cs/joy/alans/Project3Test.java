@@ -14,8 +14,7 @@ import java.time.format.DateTimeFormatter;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class Project3Test {
 
@@ -403,4 +402,79 @@ public class Project3Test {
             assertEquals(2, bill.getPhoneCalls().size());
         }
     }
+
+    @Test
+    void testValidDateAndTimeFormats() {
+        String[] validArgs1 = {"Customer", "123-456-7890", "234-567-8901", "01/01/2024", "01:00", "PM", "01/01/2024", "02:00", "PM"};
+        String[] validArgs2 = {"Customer", "123-456-7890", "234-567-8901", "12/31/2024", "11:59", "AM", "12/31/2024", "12:59", "PM"};
+
+        Project3.main(validArgs1);
+        Project3.main(validArgs2);
+
+        String output = errContent.toString();
+        assertFalse(output.contains("Invalid date/time format"));
+        restoreStreams();
+    }
+
+    @Test
+    void testInvalidDateAndTimeFormats() {
+        String[] invalidArgs1 = {"Customer", "123-456-7890", "234-567-8901", "13/01/2024", "01:00", "PM", "01/01/2024", "02:00", "PM"};
+        String[] invalidArgs2 = {"Customer", "123-456-7890", "234-567-8901", "01/01/2024", "13:00", "PM", "01/01/2024", "02:00", "PM"};
+        String[] invalidArgs3 = {"Customer", "123-456-7890", "234-567-8901", "01/01/2024", "01:00", "XX", "01/01/2024", "02:00", "PM"};
+
+        Project3.main(invalidArgs1);
+        Project3.main(invalidArgs2);
+        Project3.main(invalidArgs3);
+
+        String output = errContent.toString();
+        assertTrue(output.contains("Invalid date/time format"));
+        restoreStreams();
+    }
+
+    @Test
+    void testValidInputWithRequiredArguments() {
+        String[] args = {"Customer", "123-456-7890", "234-567-8901", "07/15/2024", "10:00", "AM", "07/15/2024", "11:00", "AM"};
+        Project3.main(args);
+        String output = outContent.toString();
+        assertFalse(output.contains("Invalid"));
+        restoreStreams();
+    }
+
+    @Test
+    void testInvalidPhoneNumberFormats() {
+        String[] args1 = {"Customer", "1234567890", "234-567-8901", "07/15/2024", "10:00", "AM", "07/15/2024", "11:00", "AM"};
+        String[] args2 = {"Customer", "123-456-7890", "2345678901", "07/15/2024", "10:00", "AM", "07/15/2024", "11:00", "AM"};
+
+        Project3.main(args1);
+        Project3.main(args2);
+
+        String output = errContent.toString();
+        assertTrue(output.contains("Invalid phone number format"));
+        restoreStreams();
+    }
+
+    @Test
+    void testInvalidDateFormats() {
+        String[] args1 = {"Customer", "123-456-7890", "234-567-8901", "15/07/2024", "10:00", "AM", "07/15/2024", "11:00", "AM"};
+        String[] args2 = {"Customer", "123-456-7890", "234-567-8901", "07/15/2024", "10:00", "XX", "07/15/2024", "11:00", "AM"};
+
+        Project3.main(args1);
+        Project3.main(args2);
+
+        String output = errContent.toString();
+        assertTrue(output.contains("Invalid date/time format"));
+        restoreStreams();
+    }
+
+    @Test
+    void testMissingArguments() {
+        String[] args = {"Customer", "123-456-7890", "234-567-8901", "07/15/2024", "10:00", "AM"};
+
+        Project3.main(args);
+
+        String output = errContent.toString();
+        assertTrue(output.contains("Missing required arguments"));
+        restoreStreams();
+    }
+
 }

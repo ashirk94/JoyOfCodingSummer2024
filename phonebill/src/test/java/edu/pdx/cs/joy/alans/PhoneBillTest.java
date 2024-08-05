@@ -45,4 +45,25 @@ public class PhoneBillTest {
         bill.addPhoneCall(call);
         assertEquals(3, bill.getPhoneCalls().size());
     }
+
+    @Test
+    void testPhoneBillWithNoCalls() {
+        PhoneBill emptyBill = new PhoneBill("Empty Customer");
+        assertTrue(emptyBill.getPhoneCalls().isEmpty());
+    }
+
+    @Test
+    void testPhoneBillWithMultipleCalls() {
+        PhoneBill bill = new PhoneBill("Customer");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy hh:mm a");
+        PhoneCall call1 = new PhoneCall("111-111-1111", "222-222-2222", LocalDateTime.parse("07/15/2024 10:00 AM", formatter), LocalDateTime.parse("07/15/2024 11:00 AM", formatter));
+        PhoneCall call2 = new PhoneCall("333-333-3333", "444-444-4444", LocalDateTime.parse("07/16/2024 12:00 PM", formatter), LocalDateTime.parse("07/16/2024 01:00 PM", formatter));
+        bill.addPhoneCall(call1);
+        bill.addPhoneCall(call2);
+
+        assertEquals(2, bill.getPhoneCalls().size());
+        assertTrue(bill.getPhoneCalls().contains(call1));
+        assertTrue(bill.getPhoneCalls().contains(call2));
+    }
+
 }
