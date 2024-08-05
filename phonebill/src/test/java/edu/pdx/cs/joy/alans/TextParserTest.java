@@ -1,11 +1,13 @@
 package edu.pdx.cs.joy.alans;
 
 import edu.pdx.cs.joy.ParserException;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -22,6 +24,16 @@ public class TextParserTest {
 
   @TempDir
   File tempDir;
+
+  @AfterEach
+  void tearDown() throws IOException {
+    for (File file : tempDir.listFiles()) {
+      if (file != null && file.exists()) {
+        Files.delete(file.toPath());
+      }
+    }
+    Files.deleteIfExists(tempDir.toPath());
+  }
 
   private PhoneBill bill;
   private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy hh:mm a");
@@ -46,11 +58,13 @@ public class TextParserTest {
       writer.write("777-777-7777 888-888-8888 07/16/2024 04:00 PM 07/16/2024 05:00 PM\n");
     }
 
-    TextParser parser = new TextParser(new FileReader(textFile));
-    PhoneBill parsedBill = parser.parse();
+    try (BufferedReader reader = new BufferedReader(new FileReader(textFile))) {
+      TextParser parser = new TextParser(reader);
+      PhoneBill parsedBill = parser.parse();
 
-    assertEquals(bill.getCustomer(), parsedBill.getCustomer());
-    assertEquals(bill.getPhoneCalls().size(), parsedBill.getPhoneCalls().size());
+      assertEquals(bill.getCustomer(), parsedBill.getCustomer());
+      assertEquals(bill.getPhoneCalls().size(), parsedBill.getPhoneCalls().size());
+    }
   }
 
   @Test
@@ -61,7 +75,9 @@ public class TextParserTest {
       writer.write("Malformed data line\n");
     }
 
-    TextParser parser = new TextParser(new FileReader(textFile));
-    assertThrows(ParserException.class, parser::parse);
+    try (BufferedReader reader = new BufferedReader(new FileReader(textFile))) {
+      TextParser parser = new TextParser(reader);
+      assertThrows(ParserException.class, parser::parse);
+    }
   }
 }

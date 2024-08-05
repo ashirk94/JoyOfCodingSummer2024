@@ -22,8 +22,10 @@ public class TextDumperTest {
         PhoneBill bill = new PhoneBill(customer);
 
         StringWriter sw = new StringWriter();
-        TextDumper dumper = new TextDumper(new PrintWriter(sw));
-        dumper.dump(bill);
+        try (PrintWriter pw = new PrintWriter(sw)) {
+            TextDumper dumper = new TextDumper(pw);
+            dumper.dump(bill);
+        }
 
         String text = sw.toString();
         assertThat(text, containsString(customer));
@@ -35,13 +37,13 @@ public class TextDumperTest {
         PhoneBill bill = new PhoneBill(customer);
 
         File textFile = new File(tempDir, "apptbook.txt");
-        try (FileWriter fileWriter = new FileWriter(textFile)) {
-            TextDumper dumper = new TextDumper(new PrintWriter(fileWriter));
+        try (PrintWriter pw = new PrintWriter(new FileWriter(textFile))) {
+            TextDumper dumper = new TextDumper(pw);
             dumper.dump(bill);
         }
 
-        try (FileReader fileReader = new FileReader(textFile)) {
-            TextParser parser = new TextParser(fileReader);
+        try (BufferedReader reader = new BufferedReader(new FileReader(textFile))) {
+            TextParser parser = new TextParser(reader);
             PhoneBill read = parser.parse();
             assertThat(read.getCustomer(), equalTo(customer));
         }
@@ -56,8 +58,10 @@ public class TextDumperTest {
                 LocalDateTime.parse("07/15/2024 11:00 AM", formatter)));
 
         StringWriter sw = new StringWriter();
-        TextDumper dumper = new TextDumper(new PrintWriter(sw));
-        dumper.dump(bill);
+        try (PrintWriter pw = new PrintWriter(sw)) {
+            TextDumper dumper = new TextDumper(pw);
+            dumper.dump(bill);
+        }
 
         String text = sw.toString();
         assertThat(text, containsString(customer));

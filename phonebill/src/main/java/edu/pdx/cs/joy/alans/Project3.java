@@ -1,13 +1,6 @@
 package edu.pdx.cs.joy.alans;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -17,19 +10,18 @@ import com.google.common.annotations.VisibleForTesting;
 import edu.pdx.cs.joy.ParserException;
 
 /**
- * This class represents the main entry point for the phone bill application.
- * It processes command line arguments, handles file operations, and prints phone bill details.
+ * The main class for Project3, which processes command line arguments, manages phone bills and phone calls, and handles file operations.
  */
 public class Project3 {
-
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy hh:mm a");
 
     /**
-     * The main method that serves as the entry point for the application.
+     * The main method for Project3.
      *
      * @param args Command line arguments
      */
     public static void main(String[] args) {
+        // Checking for README flag first
         for (String arg : args) {
             if (arg.equals("-README")) {
                 printREADME();
@@ -37,6 +29,7 @@ public class Project3 {
             }
         }
 
+        // Process other arguments
         try {
             processArgs(args);
         } catch (RuntimeException | IOException | ParserException e) {
@@ -45,16 +38,16 @@ public class Project3 {
     }
 
     /**
-     * Processes the command line arguments and performs the corresponding actions.
+     * Processes the command line arguments and contains the primary logic for the program.
      *
      * @param args Command line arguments
-     * @throws IOException If an I/O error occurs
-     * @throws ParserException If a parsing error occurs
+     * @throws IOException If an I/O error occurs during file operations
+     * @throws ParserException If an error occurs while parsing the phone bill data
      */
     @VisibleForTesting
     static void processArgs(String[] args) throws IOException, ParserException {
         if (args.length == 0) {
-            System.err.println("Missing command line arguments\n");
+            System.err.println("Missing required arguments\n");
             printUsage();
             return;
         }
@@ -67,8 +60,10 @@ public class Project3 {
         String calleeNumber = null;
         String startDate = null;
         String startTime = null;
+        String startPeriod = null;
         String endDate = null;
         String endTime = null;
+        String endPeriod = null;
 
         for (int i = 0; i < args.length; i++) {
             String arg = args[i];
@@ -105,10 +100,14 @@ public class Project3 {
                     startDate = arg;
                 } else if (startTime == null) {
                     startTime = arg;
+                } else if (startPeriod == null) {
+                    startPeriod = arg;
                 } else if (endDate == null) {
                     endDate = arg;
                 } else if (endTime == null) {
                     endTime = arg;
+                } else if (endPeriod == null) {
+                    endPeriod = arg;
                 } else {
                     System.err.println("Extraneous command line argument: " + arg);
                     return;
@@ -116,8 +115,10 @@ public class Project3 {
             }
         }
 
-        if (customer == null || callerNumber == null || calleeNumber == null || startDate == null || startTime == null || endDate == null || endTime == null) {
-            System.err.println("Missing required command line arguments");
+        if (customer == null || callerNumber == null || calleeNumber == null ||
+                startDate == null || startTime == null || startPeriod == null ||
+                endDate == null || endTime == null || endPeriod == null) {
+            System.err.println("Missing required arguments");
             return;
         }
 
@@ -126,13 +127,16 @@ public class Project3 {
             return;
         }
 
-        if (!isValidDateTime(startDate, startTime) || !isValidDateTime(endDate, endTime)) {
+        if (!isValidDateTime(startDate, startTime, startPeriod) || !isValidDateTime(endDate, endTime, endPeriod)) {
             System.err.println("Invalid date/time format");
             return;
         }
 
-        if (isEndTimeBeforeStartTime(startDate, startTime, endDate, endTime)) {
-            System.err.println("End time cannot be before begin time");
+        LocalDateTime startDateTime = LocalDateTime.parse(startDate + " " + startTime + " " + startPeriod, formatter);
+        LocalDateTime endDateTime = LocalDateTime.parse(endDate + " " + endTime + " " + endPeriod, formatter);
+
+        if (isEndTimeBeforeStartTime(startDateTime, endDateTime)) {
+            System.err.println("End time cannot be before start time");
             return;
         }
 
@@ -141,13 +145,17 @@ public class Project3 {
         if (textFile != null) {
             File file = new File(textFile);
             if (file.exists()) {
-                try {
-                    TextParser parser = new TextParser(new BufferedReader(new FileReader(file)));
+                try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+                    TextParser parser = new TextParser(reader);
                     bill = parser.parse();
                 } catch (IOException | ParserException e) {
                     System.err.println("Could not read from text file: " + e.getMessage());
                     return;
                 }
+
+                // Debugging print statements to verify customer names
+                System.out.println("Customer in file: " + bill.getCustomer());
+                System.out.println("Customer provided: " + customer);
 
                 if (!bill.getCustomer().equals(customer)) {
                     System.err.println("Customer name in file does not match specified customer. Expected: " + bill.getCustomer() + ", Provided: " + customer);
@@ -158,8 +166,6 @@ public class Project3 {
             }
         }
 
-        LocalDateTime startDateTime = DateFormatter.parse(startDate + " " + startTime);
-        LocalDateTime endDateTime = DateFormatter.parse(endDate + " " + endTime);
 
         PhoneCall call = new PhoneCall(callerNumber, calleeNumber, startDateTime, endDateTime);
         bill.addPhoneCall(call);
@@ -178,17 +184,17 @@ public class Project3 {
         }
 
         if (prettyFile != null) {
-            try (PrintWriter writer = new PrintWriter(new FileWriter(prettyFile))) {
-                PrettyPrinter printer = new PrettyPrinter(writer);
-                printer.dump(bill);
+            try (PrintWriter writer = "-".equals(prettyFile) ? new PrintWriter(System.out) : new PrintWriter(new FileWriter(prettyFile))) {
+                PrettyPrinter prettyPrinter = new PrettyPrinter(writer);
+                prettyPrinter.dump(bill);
             } catch (IOException e) {
-                System.err.println("Could not write to pretty file: " + e.getMessage());
+                System.err.println("Could not write to pretty print file: " + e.getMessage());
             }
         }
     }
 
     /**
-     * Validates a phone number.
+     * Validates the format of a phone number.
      *
      * @param phoneNumber The phone number to validate
      * @return true if the phone number is valid, false otherwise
@@ -199,40 +205,37 @@ public class Project3 {
     }
 
     /**
-     * Validates a date and time string.
+     * Validates the format of date and time.
      *
-     * @param date The date string to validate
-     * @param time The time string to validate
+     * @param date The date to validate
+     * @param time The time to validate
+     * @param period The period to validate (AM/PM)
      * @return true if the date and time are valid, false otherwise
      */
     @VisibleForTesting
-    static boolean isValidDateTime(String date, String time) {
-        return date.matches("\\d{1,2}/\\d{1,2}/\\d{4}") && time.matches("\\d{1,2}:\\d{2}\\s?[aApP][mM]");
-    }
-
-    /**
-     * Checks if the end time is before the start time.
-     *
-     * @param startDate The start date string
-     * @param startTime The start time string
-     * @param endDate The end date string
-     * @param endTime The end time string
-     * @return true if the end time is before the start time, false otherwise
-     */
-    @VisibleForTesting
-    static boolean isEndTimeBeforeStartTime(String startDate, String startTime, String endDate, String endTime) {
+    static boolean isValidDateTime(String date, String time, String period) {
         try {
-            LocalDateTime start = LocalDateTime.parse(startDate + " " + startTime, formatter);
-            LocalDateTime end = LocalDateTime.parse(endDate + " " + endTime, formatter);
-            return end.isBefore(start);
+            LocalDateTime.parse(date + " " + time + " " + period, formatter);
+            return true;
         } catch (DateTimeParseException e) {
-            System.err.println("Error parsing date/time: " + e.getMessage());
             return false;
         }
     }
 
     /**
-     * Prints the README file content to the console.
+     * Checks if the end time is before the start time.
+     *
+     * @param startDateTime The start date-time string
+     * @param endDateTime The end date-time string
+     * @return true if the end time is before the start time, false otherwise
+     */
+    @VisibleForTesting
+    static boolean isEndTimeBeforeStartTime(LocalDateTime startDateTime, LocalDateTime endDateTime) {
+        return endDateTime.isBefore(startDateTime);
+    }
+
+    /**
+     * Prints the README text from the README file.
      */
     private static void printREADME() {
         try (InputStream readme = Project3.class.getResourceAsStream("/edu/pdx/cs/joy/alans/README.txt");
@@ -247,7 +250,7 @@ public class Project3 {
     }
 
     /**
-     * Prints the usage instructions to the console.
+     * Prints the usage information.
      */
     private static void printUsage() {
         System.out.println("usage: java -jar target/phonebill-1.0.0.jar [options] <args>");
@@ -258,8 +261,8 @@ public class Project3 {
         System.out.println("        begin           Date and time the call began (format: mm/dd/yyyy hh:mm am/pm)");
         System.out.println("        end             Date and time the call ended (format: mm/dd/yyyy hh:mm am/pm)");
         System.out.println("    options are (options may appear in any order):");
+        System.out.println("        -textFile file  Specifies the file to read/write the phone bill");
         System.out.println("        -print          Prints a description of the new phone call");
-        System.out.println("        -textFile file  Where to read/write the phone bill");
         System.out.println("        -pretty file    Pretty print the phone bill to a text file or - for standard out");
         System.out.println("        -README         Prints a README for this project and exits");
     }

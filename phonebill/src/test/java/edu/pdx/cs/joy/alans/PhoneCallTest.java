@@ -22,14 +22,14 @@ public class PhoneCallTest {
 
     @Test
     void testGetBeginTimeString() {
-        String expected = "7/16/24, 2:00 PM";
+        String expected = "7/16/2024 2:00 PM";
         String actual = call.getBeginTimeString().replace("\u202F", " ");
         assertEquals(expected, actual);
     }
 
     @Test
     void testGetEndTimeString() {
-        String expected = "7/16/24, 3:00 PM";
+        String expected = "7/16/2024 3:00 PM";
         String actual = call.getEndTimeString().replace("\u202F", " ");
         assertEquals(expected, actual);
     }

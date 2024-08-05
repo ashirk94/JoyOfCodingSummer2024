@@ -15,7 +15,7 @@ public class TextDumper implements PhoneBillDumper<PhoneBill> {
 
   /**
    * Constructs a new TextDumper that writes to the given Writer.
-   * 
+   *
    * @param writer The writer to which the PhoneBill will be dumped
    */
   public TextDumper(PrintWriter writer) {
@@ -24,20 +24,16 @@ public class TextDumper implements PhoneBillDumper<PhoneBill> {
 
   /**
    * Dumps the contents of a PhoneBill to the writer.
-   * 
+   *
    * @param bill The PhoneBill to be dumped
    */
-    @Override
-    public void dump(PhoneBill bill) {
-        writer.println(bill.getCustomer());
-        for (PhoneCall call : bill.getPhoneCalls()) {
-            writer.println(String.format("%s,%s,%s,%s",
-                    call.getCaller(),
-                    call.getCallee(),
-                    call.getBeginTime().format(formatter),
-                    call.getEndTime().format(formatter)));
-        }
-        writer.flush();
-        writer.close();
-    }
+  @Override
+  public void dump(PhoneBill bill) {
+      writer.println(bill.getCustomer());
+      for (PhoneCall call : bill.getPhoneCalls()) {
+          writer.println(call.getCaller() + " " + call.getCallee() + " " +
+                  call.getBeginTime().format(formatter) + " " + call.getEndTime().format(formatter));
+      }
+      writer.flush();
+  }
 }

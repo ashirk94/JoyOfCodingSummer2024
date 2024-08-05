@@ -85,7 +85,7 @@ public class PhoneCall extends AbstractPhoneCall implements Comparable<PhoneCall
      */
     @Override
     public String getBeginTimeString() {
-        return beginTime.format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT));
+        return beginTime.format(formatter);
     }
 
     /**
@@ -93,7 +93,7 @@ public class PhoneCall extends AbstractPhoneCall implements Comparable<PhoneCall
      */
     @Override
     public String getEndTimeString() {
-        return endTime.format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT));
+        return endTime.format(formatter);
     }
 
     /**
