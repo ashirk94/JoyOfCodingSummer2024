@@ -45,3 +45,5 @@ dependency-reduced-pom.xml
 .vscode/
 phonebill/newbill.txt
 phonebill/prettybill.txt
+phonebill/pretty.txt
+phonebill/bill.txt

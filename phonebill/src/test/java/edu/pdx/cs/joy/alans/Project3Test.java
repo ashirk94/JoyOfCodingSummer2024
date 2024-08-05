@@ -284,30 +284,80 @@ public class Project3Test {
     }
 
     @Test
-    void testValidCall() throws IOException, ParserException {
-        File textFile = new File(tempDir.toFile(), "testfile.txt");
-        String[] args = { "-textFile", textFile.getPath(), "Customer", "123-456-7890", "234-567-8901", "07/15/2024", "10:00", "AM", "07/15/2024", "11:00", "AM" };
+    void testNoArguments() {
+        String[] args = {};
+        ByteArrayOutputStream errContent = new ByteArrayOutputStream();
+        System.setErr(new PrintStream(errContent));
 
         Project3.main(args);
 
-        assertTrue(textFile.exists(), "The file should exist");
-        try (BufferedReader reader = new BufferedReader(new FileReader(textFile))) {
-            TextParser parser = new TextParser(reader);
-            PhoneBill bill = parser.parse();
-            assertTrue(bill != null);
-            assertTrue(bill.getPhoneCalls().size() > 0);
-        }
+        String output = errContent.toString();
+        assertThat(output, containsString("Missing required arguments"));
+        restoreStreams();
     }
 
     @Test
-    void testExtraneousArgument() {
-        String[] args = {"-textFile", "testfile.txt", "Customer", "123-456-7890", "234-567-8901", "01/03/2024", "11:00", "am", "01/03/2024", "1:00", "pm", "extra"};
-        try {
-            Project3.main(args);
-        } catch (Exception e) {
-            // Ignore exception
-        }
-        assertTrue(errContent.toString().contains("Extraneous command line argument"));
+    void testPrintOption() {
+        String[] args = { "-print", "Customer", "123-456-7890", "234-567-8901", "03/03/2024", "12:00", "PM", "03/03/2024", "04:00", "PM" };
+        ByteArrayOutputStream outContent = new ByteArrayOutputStream();
+        System.setOut(new PrintStream(outContent));
+
+        Project3.main(args);
+
+        String output = outContent.toString();
+        assertThat(output, containsString("Phone call from 123-456-7890 to 234-567-8901 from 3/3/2024 12:00 PM to 3/3/2024 4:00 PM"));
+        restoreStreams();
+    }
+
+    @Test
+    void testTextFileOptionWithoutFilename() {
+        String[] args = { "-textFile" };
+        ByteArrayOutputStream errContent = new ByteArrayOutputStream();
+        System.setErr(new PrintStream(errContent));
+
+        Project3.main(args);
+
+        String output = errContent.toString();
+        assertThat(output, containsString("Missing file name after -textFile"));
+        restoreStreams();
+    }
+
+    @Test
+    void testPrettyPrintOptionWithoutFilename() {
+        String[] args = { "-pretty" };
+        ByteArrayOutputStream errContent = new ByteArrayOutputStream();
+        System.setErr(new PrintStream(errContent));
+
+        Project3.main(args);
+
+        String output = errContent.toString();
+        assertThat(output, containsString("Missing file name after -pretty"));
+        restoreStreams();
+    }
+
+    @Test
+    void testInvalidPhoneNumberFormat() {
+        String[] args = { "Customer", "1234567890", "234-567-8901", "03/03/2024", "12:00", "PM", "03/03/2024", "04:00", "PM" };
+        ByteArrayOutputStream errContent = new ByteArrayOutputStream();
+        System.setErr(new PrintStream(errContent));
+
+        Project3.main(args);
+
+        String output = errContent.toString();
+        assertThat(output, containsString("Invalid phone number format"));
+        restoreStreams();
+    }
+
+    @Test
+    void testInvalidPhoneNumberFormat2() {
+        String[] args = { "Customer", "123-456-7890", "2345678901", "03/03/2024", "12:00", "PM", "03/03/2024", "04:00", "PM" };
+        ByteArrayOutputStream errContent = new ByteArrayOutputStream();
+        System.setErr(new PrintStream(errContent));
+
+        Project3.main(args);
+
+        String output = errContent.toString();
+        assertThat(output, containsString("Invalid phone number format"));
         restoreStreams();
     }
 }

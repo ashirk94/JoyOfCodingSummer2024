@@ -162,7 +162,6 @@ public class Project3 {
             }
         }
 
-
         PhoneCall call = new PhoneCall(callerNumber, calleeNumber, startDateTime, endDateTime);
         bill.addPhoneCall(call);
 
@@ -180,7 +179,7 @@ public class Project3 {
         }
 
         if (prettyFile != null) {
-            try (PrintWriter writer = "-".equals(prettyFile) ? new PrintWriter(System.out, true) : new PrintWriter(new FileWriter(prettyFile))) {
+            try (PrintWriter writer = "-".equals(prettyFile) ? new PrintWriter(System.out) : new PrintWriter(new FileWriter(prettyFile))) {
                 PrettyPrinter prettyPrinter = new PrettyPrinter(writer);
                 prettyPrinter.dump(bill);
             } catch (IOException e) {
@@ -188,6 +187,7 @@ public class Project3 {
             }
         }
     }
+
 
     /**
      * Validates the format of a phone number.
