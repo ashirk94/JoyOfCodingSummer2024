@@ -162,6 +162,10 @@ public class Project3 {
             }
         }
 
+        addCall(printCall, textFile, prettyFile, callerNumber, calleeNumber, startDateTime, endDateTime, bill);
+    }
+
+    static void addCall(boolean printCall, String textFile, String prettyFile, String callerNumber, String calleeNumber, LocalDateTime startDateTime, LocalDateTime endDateTime, PhoneBill bill) {
         PhoneCall call = new PhoneCall(callerNumber, calleeNumber, startDateTime, endDateTime);
         bill.addPhoneCall(call);
 
@@ -187,7 +191,6 @@ public class Project3 {
             }
         }
     }
-
 
     /**
      * Validates the format of a phone number.
