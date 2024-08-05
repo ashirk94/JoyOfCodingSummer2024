@@ -157,7 +157,7 @@ public class Project3Test {
         Project3.main(args);
 
         String output = errContent.toString();
-        assertThat(output, containsString("Invalid date/time format"));
+        assertThat(output, containsString("Invalid start date/time format"));
         restoreStreams();
     }
 
@@ -170,7 +170,7 @@ public class Project3Test {
         Project3.main(args);
 
         String output = errContent.toString();
-        assertThat(output, containsString("Invalid date/time format"));
+        assertThat(output, containsString("Invalid start date/time format"));
         restoreStreams();
     }
 
@@ -368,7 +368,7 @@ public class Project3Test {
         Project3.main(args);
 
         String output = errContent.toString();
-        assertThat(output, containsString("Invalid date/time format"));
+        assertThat(output, containsString("Invalid start date/time format"));
         restoreStreams();
     }
 
@@ -381,7 +381,7 @@ public class Project3Test {
         Project3.main(args);
 
         String output = errContent.toString();
-        assertThat(output, containsString("Invalid date/time format"));
+        assertThat(output, containsString("Invalid start date/time format"));
         restoreStreams();
     }
 
@@ -427,7 +427,7 @@ public class Project3Test {
         Project3.main(invalidArgs3);
 
         String output = errContent.toString();
-        assertTrue(output.contains("Invalid date/time format"));
+        assertTrue(output.contains("Invalid start date/time format"));
         restoreStreams();
     }
 
@@ -462,7 +462,7 @@ public class Project3Test {
         Project3.main(args2);
 
         String output = errContent.toString();
-        assertTrue(output.contains("Invalid date/time format"));
+        assertTrue(output.contains("Invalid start date/time format"));
         restoreStreams();
     }
 
@@ -476,5 +476,68 @@ public class Project3Test {
         assertTrue(output.contains("Missing required arguments"));
         restoreStreams();
     }
+    @Test
+    void testInvalidEndDateFormat() {
+        String[] args = { "Customer", "123-456-7890", "234-567-8901", "07/15/2024", "10:00", "AM", "invalid-date", "11:00", "AM" };
+        ByteArrayOutputStream errContent = new ByteArrayOutputStream();
+        System.setErr(new PrintStream(errContent));
 
+        Project3.main(args);
+
+        String output = errContent.toString();
+        assertThat(output, containsString("Invalid end date/time format"));
+        restoreStreams();
+    }
+
+    @Test
+    void testInvalidEndTimeFormat() {
+        String[] args = { "Customer", "123-456-7890", "234-567-8901", "07/15/2024", "10:00", "AM", "07/15/2024", "invalid-time", "AM" };
+        ByteArrayOutputStream errContent = new ByteArrayOutputStream();
+        System.setErr(new PrintStream(errContent));
+
+        Project3.main(args);
+
+        String output = errContent.toString();
+        assertThat(output, containsString("Invalid end date/time format"));
+        restoreStreams();
+    }
+
+    @Test
+    void testInvalidEndPeriodFormat() {
+        String[] args = { "Customer", "123-456-7890", "234-567-8901", "07/15/2024", "10:00", "AM", "07/15/2024", "11:00", "XX" };
+        ByteArrayOutputStream errContent = new ByteArrayOutputStream();
+        System.setErr(new PrintStream(errContent));
+
+        Project3.main(args);
+
+        String output = errContent.toString();
+        assertThat(output, containsString("Invalid end date/time format"));
+        restoreStreams();
+    }
+
+    @Test
+    void testIncompleteEndDate() {
+        String[] args = { "Customer", "123-456-7890", "234-567-8901", "07/15/2024", "10:00", "AM", "07/15", "11:00", "AM" };
+        ByteArrayOutputStream errContent = new ByteArrayOutputStream();
+        System.setErr(new PrintStream(errContent));
+
+        Project3.main(args);
+
+        String output = errContent.toString();
+        assertThat(output, containsString("Invalid end date/time format"));
+        restoreStreams();
+    }
+
+    @Test
+    void testInvalidEndDateAndTime() {
+        String[] args = { "Customer", "123-456-7890", "234-567-8901", "07/15/2024", "10:00", "AM", "invalid-date", "invalid-time", "PM" };
+        ByteArrayOutputStream errContent = new ByteArrayOutputStream();
+        System.setErr(new PrintStream(errContent));
+
+        Project3.main(args);
+
+        String output = errContent.toString();
+        assertThat(output, containsString("Invalid end date/time format"));
+        restoreStreams();
+    }
 }

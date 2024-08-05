@@ -4,6 +4,7 @@ import java.io.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.Locale;
 
 import com.google.common.annotations.VisibleForTesting;
 
@@ -13,7 +14,7 @@ import edu.pdx.cs.joy.ParserException;
  * The main class for Project3, which processes command line arguments, manages phone bills and phone calls, and handles file operations.
  */
 public class Project3 {
-    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy hh:mm a");
+    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy hh:mm a", Locale.ENGLISH);
 
     /**
      * The main method for Project3.
@@ -50,6 +51,11 @@ public class Project3 {
             System.err.println("Missing required arguments\n");
             printUsage();
             return;
+        }
+
+        // Trims whitespace from all arguments
+        for (int i = 0; i < args.length; i++) {
+            args[i] = args[i].trim();
         }
 
         boolean printCall = false;
@@ -127,8 +133,13 @@ public class Project3 {
             return;
         }
 
-        if (!isValidDateTime(startDate, startTime, startPeriod) || !isValidDateTime(endDate, endTime, endPeriod)) {
-            System.err.println("Invalid date/time format");
+        if (!isValidDateTime(startDate, startTime, startPeriod)) {
+            System.err.println("Invalid start date/time format");
+            return;
+        }
+
+        if (!isValidDateTime(endDate, endTime, endPeriod)) {
+            System.err.println("Invalid end date/time format");
             return;
         }
 
@@ -162,19 +173,6 @@ public class Project3 {
             }
         }
 
-        addCall(printCall, textFile, callerNumber, calleeNumber, startDateTime, endDateTime, bill);
-
-        if (prettyFile != null) {
-            try (PrintWriter writer = "-".equals(prettyFile) ? new PrintWriter(System.out) : new PrintWriter(new FileWriter(prettyFile))) {
-                PrettyPrinter prettyPrinter = new PrettyPrinter(writer);
-                prettyPrinter.dump(bill);
-            } catch (IOException e) {
-                System.err.println("Could not write to pretty print file: " + e.getMessage());
-            }
-        }
-    }
-
-    static void addCall(boolean printCall, String textFile, String callerNumber, String calleeNumber, LocalDateTime startDateTime, LocalDateTime endDateTime, PhoneBill bill) {
         PhoneCall call = new PhoneCall(callerNumber, calleeNumber, startDateTime, endDateTime);
         bill.addPhoneCall(call);
 
@@ -188,6 +186,15 @@ public class Project3 {
                 dumper.dump(bill);
             } catch (IOException e) {
                 System.err.println("Could not write to text file: " + e.getMessage());
+            }
+        }
+
+        if (prettyFile != null) {
+            try (PrintWriter writer = "-".equals(prettyFile) ? new PrintWriter(System.out) : new PrintWriter(new FileWriter(prettyFile))) {
+                PrettyPrinter prettyPrinter = new PrettyPrinter(writer);
+                prettyPrinter.dump(bill);
+            } catch (IOException e) {
+                System.err.println("Could not write to pretty print file: " + e.getMessage());
             }
         }
     }
@@ -220,7 +227,6 @@ public class Project3 {
             return false;
         }
     }
-
 
     /**
      * Checks if the end time is before the start time.
