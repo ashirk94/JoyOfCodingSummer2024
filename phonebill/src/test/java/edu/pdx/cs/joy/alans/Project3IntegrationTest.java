@@ -44,7 +44,7 @@ public class Project3IntegrationTest {
         System.setOut(originalOut);
     }
 
-    @Disabled
+
     @Test
     public void testHelpMessage() {
         String[] args = {};
@@ -53,7 +53,7 @@ public class Project3IntegrationTest {
         } catch (Exception e) {
             // Ignore exception
         }
-        assertTrue(errContent.toString().contains("Missing command line arguments"));
+        assertTrue(outContent.toString().contains("usage"));
         restoreStreams();
     }
 

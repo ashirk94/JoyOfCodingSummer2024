@@ -153,10 +153,6 @@ public class Project3 {
                     return;
                 }
 
-                // Debugging print statements to verify customer names
-                System.out.println("Customer in file: " + bill.getCustomer());
-                System.out.println("Customer provided: " + customer);
-
                 if (!bill.getCustomer().equals(customer)) {
                     System.err.println("Customer name in file does not match specified customer. Expected: " + bill.getCustomer() + ", Provided: " + customer);
                     return;
@@ -184,7 +180,7 @@ public class Project3 {
         }
 
         if (prettyFile != null) {
-            try (PrintWriter writer = "-".equals(prettyFile) ? new PrintWriter(System.out) : new PrintWriter(new FileWriter(prettyFile))) {
+            try (PrintWriter writer = "-".equals(prettyFile) ? new PrintWriter(System.out, true) : new PrintWriter(new FileWriter(prettyFile))) {
                 PrettyPrinter prettyPrinter = new PrettyPrinter(writer);
                 prettyPrinter.dump(bill);
             } catch (IOException e) {
