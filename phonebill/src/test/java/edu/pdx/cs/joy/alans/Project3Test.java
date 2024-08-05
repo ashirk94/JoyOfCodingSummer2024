@@ -3,7 +3,6 @@ package edu.pdx.cs.joy.alans;
 import edu.pdx.cs.joy.ParserException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -359,5 +358,49 @@ public class Project3Test {
         String output = errContent.toString();
         assertThat(output, containsString("Invalid phone number format"));
         restoreStreams();
+    }
+
+    @Test
+    void testIncompleteDate() {
+        String[] args = { "Customer", "123-456-7890", "234-567-8901", "03/03", "12:00", "PM", "03/03/2024", "04:00", "PM" };
+        ByteArrayOutputStream errContent = new ByteArrayOutputStream();
+        System.setErr(new PrintStream(errContent));
+
+        Project3.main(args);
+
+        String output = errContent.toString();
+        assertThat(output, containsString("Invalid date/time format"));
+        restoreStreams();
+    }
+
+    @Test
+    void testInvalidDateAndTime() {
+        String[] args = { "Customer", "123-456-7890", "234-567-8901", "invalid-date", "invalid-time", "PM", "03/03/2024", "04:00", "PM" };
+        ByteArrayOutputStream errContent = new ByteArrayOutputStream();
+        System.setErr(new PrintStream(errContent));
+
+        Project3.main(args);
+
+        String output = errContent.toString();
+        assertThat(output, containsString("Invalid date/time format"));
+        restoreStreams();
+    }
+
+    @Test
+    void testFileCreationWithMultipleCalls() throws IOException, ParserException {
+        File textFile = new File(tempDir.toFile(), "multipleCalls.txt");
+        String[] args1 = { "-textFile", textFile.getPath(), "Customer", "123-456-7890", "234-567-8901", "07/15/2024", "10:00", "AM", "07/15/2024", "11:00", "AM" };
+        String[] args2 = { "-textFile", textFile.getPath(), "Customer", "345-678-9012", "456-789-0123", "07/15/2024", "11:30", "AM", "07/15/2024", "12:00", "PM" };
+
+        Project3.main(args1);
+        Project3.main(args2);
+
+        assertTrue(textFile.exists());
+        try (BufferedReader reader = new BufferedReader(new FileReader(textFile))) {
+            TextParser parser = new TextParser(reader);
+            PhoneBill bill = parser.parse();
+            assertEquals("Customer", bill.getCustomer());
+            assertEquals(2, bill.getPhoneCalls().size());
+        }
     }
 }

@@ -162,10 +162,19 @@ public class Project3 {
             }
         }
 
-        addCall(printCall, textFile, prettyFile, callerNumber, calleeNumber, startDateTime, endDateTime, bill);
+        addCall(printCall, textFile, callerNumber, calleeNumber, startDateTime, endDateTime, bill);
+
+        if (prettyFile != null) {
+            try (PrintWriter writer = "-".equals(prettyFile) ? new PrintWriter(System.out) : new PrintWriter(new FileWriter(prettyFile))) {
+                PrettyPrinter prettyPrinter = new PrettyPrinter(writer);
+                prettyPrinter.dump(bill);
+            } catch (IOException e) {
+                System.err.println("Could not write to pretty print file: " + e.getMessage());
+            }
+        }
     }
 
-    static void addCall(boolean printCall, String textFile, String prettyFile, String callerNumber, String calleeNumber, LocalDateTime startDateTime, LocalDateTime endDateTime, PhoneBill bill) {
+    static void addCall(boolean printCall, String textFile, String callerNumber, String calleeNumber, LocalDateTime startDateTime, LocalDateTime endDateTime, PhoneBill bill) {
         PhoneCall call = new PhoneCall(callerNumber, calleeNumber, startDateTime, endDateTime);
         bill.addPhoneCall(call);
 
@@ -179,15 +188,6 @@ public class Project3 {
                 dumper.dump(bill);
             } catch (IOException e) {
                 System.err.println("Could not write to text file: " + e.getMessage());
-            }
-        }
-
-        if (prettyFile != null) {
-            try (PrintWriter writer = "-".equals(prettyFile) ? new PrintWriter(System.out) : new PrintWriter(new FileWriter(prettyFile))) {
-                PrettyPrinter prettyPrinter = new PrettyPrinter(writer);
-                prettyPrinter.dump(bill);
-            } catch (IOException e) {
-                System.err.println("Could not write to pretty print file: " + e.getMessage());
             }
         }
     }
