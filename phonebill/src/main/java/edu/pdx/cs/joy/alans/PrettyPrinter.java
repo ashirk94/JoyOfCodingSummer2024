@@ -1,12 +1,15 @@
 package edu.pdx.cs.joy.alans;
 
 import java.io.PrintWriter;
+import java.time.format.DateTimeFormatter;
+import java.util.Locale;
 
 /**
  * This class is responsible for pretty-printing a phone bill.
  */
 public class PrettyPrinter {
     private final PrintWriter writer;
+    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy hh:mm a", Locale.US);
 
     /**
      * Creates a new <code>PrettyPrinter</code> that writes to the specified writer.
@@ -29,8 +32,8 @@ public class PrettyPrinter {
             writer.println(String.format("%s called %s from %s to %s Duration: %d minutes",
                     call.getCaller(),
                     call.getCallee(),
-                    DateFormatter.format(call.getBeginTime()),
-                    DateFormatter.format(call.getEndTime()),
+                    call.getBeginTime().format(formatter),
+                    call.getEndTime().format(formatter),
                     call.getDurationMinutes()));
         }
         writer.flush();

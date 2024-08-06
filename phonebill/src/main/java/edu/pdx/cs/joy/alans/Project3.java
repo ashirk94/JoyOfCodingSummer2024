@@ -14,7 +14,7 @@ import edu.pdx.cs.joy.ParserException;
  * The main class for Project3, which processes command line arguments, manages phone bills and phone calls, and handles file operations.
  */
 public class Project3 {
-    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy hh:mm a", Locale.ENGLISH);
+    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy hh:mm a", Locale.US);
 
     /**
      * The main method for Project3.
@@ -42,6 +42,7 @@ public class Project3 {
             processArgs(args);
         } catch (RuntimeException | IOException | ParserException e) {
             System.err.println("Error: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -54,29 +55,25 @@ public class Project3 {
      */
     @VisibleForTesting
     static void processArgs(String[] args) throws IOException, ParserException {
-        if (args.length == 0) {
-            System.err.println("Missing required arguments\n");
-            printUsage();
-            return;
-        }
-
         boolean printCall = false;
         String textFile = null;
         String prettyFile = null;
         String customer = null;
         String callerNumber = null;
         String calleeNumber = null;
-        String startDate = null;
-        String startTime = null;
-        String startPeriod = null;
-        String endDate = null;
-        String endTime = null;
-        String endPeriod = null;
+        String startDateTime = null;
+        String endDateTime = null;
 
         int i = 0;
-        while (i < args.length) {
-            String arg = args[i];
-            switch (arg) {
+
+        // Ignore the first argument (command name) if it is present
+        if (args.length > 0 && args[0].equals("Project3")) {
+            i++;
+        }
+
+        // Process options first
+        while (i < args.length && args[i].startsWith("-")) {
+            switch (args[i]) {
                 case "-print":
                     printCall = true;
                     break;
@@ -85,6 +82,7 @@ public class Project3 {
                         textFile = args[++i];
                     } else {
                         System.err.println("Missing file name after -textFile");
+                        printUsage();
                         return;
                     }
                     break;
@@ -93,6 +91,7 @@ public class Project3 {
                         prettyFile = args[++i];
                     } else {
                         System.err.println("Missing file name after -pretty");
+                        printUsage();
                         return;
                     }
                     break;
@@ -100,64 +99,53 @@ public class Project3 {
                     printREADME();
                     return;
                 default:
-                    if (arg.startsWith("-")) {
-                        System.err.println("Unknown command line option: " + arg);
-                        return;
-                    } else {
-                        if (customer == null) {
-                            customer = arg;
-                        } else if (callerNumber == null) {
-                            callerNumber = arg;
-                        } else if (calleeNumber == null) {
-                            calleeNumber = arg;
-                        } else if (startDate == null) {
-                            startDate = arg;
-                        } else if (startTime == null) {
-                            startTime = arg;
-                        } else if (startPeriod == null) {
-                            startPeriod = arg;
-                        } else if (endDate == null) {
-                            endDate = arg;
-                        } else if (endTime == null) {
-                            endTime = arg;
-                        } else if (endPeriod == null) {
-                            endPeriod = arg;
-                        } else {
-                            System.err.println("Extraneous command line argument: " + arg);
-                            return;
-                        }
-                    }
-                    break;
+                    System.err.println("Unknown command line option: " + args[i]);
+                    printUsage();
+                    return;
             }
             i++;
         }
 
-        if (customer == null || callerNumber == null || calleeNumber == null ||
-                startDate == null || startTime == null || startPeriod == null ||
-                endDate == null || endTime == null || endPeriod == null) {
-            System.err.println("Missing required arguments");
+        // Check if there are enough remaining arguments for positional parameters
+        if (args.length - i < 8) {
+            System.err.println("Missing required arguments\n");
+            printUsage();
             return;
         }
+
+        // Process positional arguments
+        customer = args[i++];
+        callerNumber = args[i++];
+        calleeNumber = args[i++];
+        String startDate = args[i++];
+        String startTime = args[i++];
+        String startPeriod = args[i++].toUpperCase(Locale.ENGLISH); // Convert to uppercase
+        String endDate = args[i++];
+        String endTime = args[i++];
+        String endPeriod = args[i++].toUpperCase(Locale.ENGLISH); // Convert to uppercase
+
+        startDateTime = startDate + " " + startTime + " " + startPeriod;
+        endDateTime = endDate + " " + endTime + " " + endPeriod;
 
         if (!isValidPhoneNumber(callerNumber) || !isValidPhoneNumber(calleeNumber)) {
             System.err.println("Invalid phone number format");
             return;
         }
 
-        if (!isValidDateTime(startDate, startTime, startPeriod)) {
+        if (!isValidDateTime(startDateTime)) {
             System.err.println("Invalid start date/time format");
             return;
         }
 
-        if (!isValidDateTime(endDate, endTime, endPeriod)) {
+        if (!isValidDateTime(endDateTime)) {
             System.err.println("Invalid end date/time format");
             return;
         }
 
-        LocalDateTime startDateTime = LocalDateTime.parse(startDate + " " + startTime + " " + startPeriod, formatter);
-        LocalDateTime endDateTime = LocalDateTime.parse(endDate + " " + endTime + " " + endPeriod, formatter);
+        LocalDateTime start = parseDateTime(startDateTime);
+        LocalDateTime end = parseDateTime(endDateTime);
 
-        if (isEndTimeBeforeStartTime(startDateTime, endDateTime)) {
+        if (isEndTimeBeforeStartTime(start, end)) {
             System.err.println("End time cannot be before start time");
             return;
         }
@@ -184,7 +172,7 @@ public class Project3 {
             }
         }
 
-        PhoneCall call = new PhoneCall(callerNumber, calleeNumber, startDateTime, endDateTime);
+        PhoneCall call = new PhoneCall(callerNumber, calleeNumber, start, end);
         bill.addPhoneCall(call);
 
         if (printCall) {
@@ -218,25 +206,38 @@ public class Project3 {
      */
     @VisibleForTesting
     static boolean isValidPhoneNumber(String phoneNumber) {
-        return phoneNumber.matches("\\d{3}-\\d{3}-\\d{4}");
+        if (!phoneNumber.matches("\\d{3}-\\d{3}-\\d{4}")) {
+            System.err.println("Invalid phone number: " + phoneNumber);
+            return false;
+        }
+        return true;
     }
 
     /**
-     * Validates the format of date and time.
+     * Validates the format of a date and time string.
      *
-     * @param date The date to validate
-     * @param time The time to validate
-     * @param period The period to validate (AM/PM)
+     * @param dateTimeString The date and time string to validate
      * @return true if the date and time are valid, false otherwise
      */
     @VisibleForTesting
-    static boolean isValidDateTime(String date, String time, String period) {
+    static boolean isValidDateTime(String dateTimeString) {
         try {
-            LocalDateTime.parse(date + " " + time + " " + period, formatter);
+            LocalDateTime.parse(dateTimeString, formatter);
             return true;
         } catch (DateTimeParseException e) {
             return false;
         }
+    }
+
+    /**
+     * Parses a date and time string into a LocalDateTime object.
+     *
+     * @param dateTimeString The date and time string to parse
+     * @return The parsed LocalDateTime object
+     */
+    @VisibleForTesting
+    static LocalDateTime parseDateTime(String dateTimeString) {
+        return LocalDateTime.parse(dateTimeString, formatter);
     }
 
     /**
@@ -267,20 +268,14 @@ public class Project3 {
     }
 
     /**
-     * Prints the usage information.
+     * Prints the usage information for the program.
      */
     private static void printUsage() {
-        System.out.println("usage: java -jar target/phonebill-1.0.0.jar [options] <args>");
-        System.out.println("    args are (in this order):");
-        System.out.println("        customer        The person whose phone bill we’re modeling");
-        System.out.println("        callerNumber    Phone number of the caller (format: nnn-nnn-nnnn)");
-        System.out.println("        calleeNumber    Phone number of the person who was called (format: nnn-nnn-nnnn)");
-        System.out.println("        begin           Date and time the call began (format: mm/dd/yyyy hh:mm am/pm)");
-        System.out.println("        end             Date and time the call ended (format: mm/dd/yyyy hh:mm am/pm)");
-        System.out.println("    options are (options may appear in any order):");
-        System.out.println("        -textFile file  Specifies the file to read/write the phone bill");
-        System.out.println("        -print          Prints a description of the new phone call");
-        System.out.println("        -pretty file    Pretty print the phone bill to a text file or - for standard out");
-        System.out.println("        -README         Prints a README for this project and exits");
+        System.out.println("Usage: java -jar phonebill-1.0.0.jar Project3 [options] <customer> <caller> <callee> <startDate> <startTime> <startPeriod> <endDate> <endTime> <endPeriod>");
+        System.out.println("Options:");
+        System.out.println("  -print              Print the phone call details");
+        System.out.println("  -textFile <file>    Specify a text file for phone bill data");
+        System.out.println("  -pretty <file>      Specify a file for pretty printing output");
+        System.out.println("  -README             Print README and exit");
     }
 }
