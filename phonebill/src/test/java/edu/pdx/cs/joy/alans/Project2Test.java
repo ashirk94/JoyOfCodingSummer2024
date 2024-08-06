@@ -1,18 +1,13 @@
 package edu.pdx.cs.joy.alans;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintStream;
-import java.io.PrintWriter;
+import java.io.*;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
-import org.junit.jupiter.api.Disabled;
+
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -26,17 +21,30 @@ public class Project2Test {
     @TempDir
     File tempDir;
 
+    private static final PrintStream originalErr = System.err;
+    private ByteArrayOutputStream errContent;
+    private static final PrintStream originalOut = System.out;
+    private ByteArrayOutputStream outContent;
+
+    @BeforeEach
+    public void setUpStreams() {
+        errContent = new ByteArrayOutputStream();
+        System.setErr(new PrintStream(errContent));
+        outContent = new ByteArrayOutputStream();
+        System.setOut(new PrintStream(outContent));
+    }
+
 //    @Test
 //    void testCreateNewFileWhenNotExist() throws IOException, ParserException {
 //        File textFile = new File(tempDir, "newbill.txt");
-//        String[] args = { "-textFile", textFile.getPath(), "New Customer", "234-567-8901", "109-876-5432", "08/01/2024", "3:00 pm", "08/01/2024", "3:30 pm" };
+//        String[] args = { "-textFile", textFile.getPath(), "New Customer", "234-567-8901", "109-876-5432", "08/01/2024", "3:00", "pm", "08/01/2024", "3:30", "pm" };
 //        Project2.main(args);
 //
 //        // Check if the file was created
 //        assertThat(textFile.exists(), is(true));
 //
 //        // Parse the file and validate its contents
-//        TextParser parser = new TextParser(new FileReader(textFile));
+//        TextParser parser = new TextParser(new BufferedReader(textFile));
 //        PhoneBill bill = parser.parse();
 //        assertThat(bill.getCustomer(), equalTo("New Customer"));
 //        assertThat(bill.getPhoneCalls().size(), equalTo(1));

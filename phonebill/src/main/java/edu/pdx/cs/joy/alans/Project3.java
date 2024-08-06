@@ -22,6 +22,13 @@ public class Project3 {
      * @param args Command line arguments
      */
     public static void main(String[] args) {
+        // Checks for null arguments array
+        if (args == null) {
+            System.err.println("Error: Arguments cannot be null");
+            printUsage();
+            return;
+        }
+
         // Checking for README flag first
         for (String arg : args) {
             if (arg.equals("-README")) {
@@ -30,7 +37,7 @@ public class Project3 {
             }
         }
 
-        // Process other arguments
+        // Processes other arguments
         try {
             processArgs(args);
         } catch (RuntimeException | IOException | ParserException e) {
@@ -53,11 +60,6 @@ public class Project3 {
             return;
         }
 
-        // Trims whitespace from all arguments
-        for (int i = 0; i < args.length; i++) {
-            args[i] = args[i].trim();
-        }
-
         boolean printCall = false;
         String textFile = null;
         String prettyFile = null;
@@ -71,54 +73,63 @@ public class Project3 {
         String endTime = null;
         String endPeriod = null;
 
-        for (int i = 0; i < args.length; i++) {
+        int i = 0;
+        while (i < args.length) {
             String arg = args[i];
-            if (arg.equals("-print")) {
-                printCall = true;
-            } else if (arg.equals("-textFile")) {
-                if (i + 1 < args.length) {
-                    textFile = args[++i];
-                } else {
-                    System.err.println("Missing file name after -textFile");
+            switch (arg) {
+                case "-print":
+                    printCall = true;
+                    break;
+                case "-textFile":
+                    if (i + 1 < args.length) {
+                        textFile = args[++i];
+                    } else {
+                        System.err.println("Missing file name after -textFile");
+                        return;
+                    }
+                    break;
+                case "-pretty":
+                    if (i + 1 < args.length) {
+                        prettyFile = args[++i];
+                    } else {
+                        System.err.println("Missing file name after -pretty");
+                        return;
+                    }
+                    break;
+                case "-README":
+                    printREADME();
                     return;
-                }
-            } else if (arg.equals("-pretty")) {
-                if (i + 1 < args.length) {
-                    prettyFile = args[++i];
-                } else {
-                    System.err.println("Missing file name after -pretty");
-                    return;
-                }
-            } else if (arg.equals("-README")) {
-                printREADME();
-                return;
-            } else if (arg.startsWith("-")) {
-                System.err.println("Unknown command line option: " + arg);
-                return;
-            } else {
-                if (customer == null) {
-                    customer = arg;
-                } else if (callerNumber == null) {
-                    callerNumber = arg;
-                } else if (calleeNumber == null) {
-                    calleeNumber = arg;
-                } else if (startDate == null) {
-                    startDate = arg;
-                } else if (startTime == null) {
-                    startTime = arg;
-                } else if (startPeriod == null) {
-                    startPeriod = arg;
-                } else if (endDate == null) {
-                    endDate = arg;
-                } else if (endTime == null) {
-                    endTime = arg;
-                } else if (endPeriod == null) {
-                    endPeriod = arg;
-                } else {
-                    System.err.println("Extraneous command line argument: " + arg);
-                    return;
-                }
+                default:
+                    if (arg.startsWith("-")) {
+                        System.err.println("Unknown command line option: " + arg);
+                        return;
+                    } else {
+                        if (customer == null) {
+                            customer = arg;
+                        } else if (callerNumber == null) {
+                            callerNumber = arg;
+                        } else if (calleeNumber == null) {
+                            calleeNumber = arg;
+                        } else if (startDate == null) {
+                            startDate = arg;
+                        } else if (startTime == null) {
+                            startTime = arg;
+                        } else if (startPeriod == null) {
+                            startPeriod = arg;
+                        } else if (endDate == null) {
+                            endDate = arg;
+                        } else if (endTime == null) {
+                            endTime = arg;
+                        } else if (endPeriod == null) {
+                            endPeriod = arg;
+                        } else {
+                            System.err.println("Extraneous command line argument: " + arg);
+                            return;
+                        }
+                    }
+                    break;
             }
+            i++;
         }
 
         if (customer == null || callerNumber == null || calleeNumber == null ||
