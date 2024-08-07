@@ -2,75 +2,68 @@ package edu.pdx.cs.joy.alans;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.Reader;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 import edu.pdx.cs.joy.ParserException;
-import edu.pdx.cs.joy.PhoneBillParser;
 
 /**
- * A class that parses a PhoneBill from a text file.
+ * This class represents a parser that reads phone bill information from a file.
  */
-public class TextParser implements PhoneBillParser<PhoneBill> {
+public class TextParser {
     private final BufferedReader reader;
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy h:mm a", Locale.US);
 
     /**
-     * Constructs a new TextParser that reads from the given Reader.
+     * Creates a new <code>TextParser</code> that reads from a <code>Reader</code>.
      *
-     * @param reader The reader from which the PhoneBill will be parsed
+     * @param reader The reader to read from.
      */
-    public TextParser(BufferedReader reader) {
-        this.reader = reader;
+    public TextParser(Reader reader) {
+        this.reader = new BufferedReader(reader);
     }
 
     /**
-     * Parses a PhoneBill from the reader.
+     * Parses the phone bill from the file.
      *
-     * @return The parsed PhoneBill
-     * @throws ParserException If an error occurs while parsing the file
+     * @return The parsed phone bill.
+     * @throws IOException      If an I/O error occurs.
+     * @throws ParserException If the file format is invalid.
      */
-    @Override
-    public PhoneBill parse() throws ParserException {
-        String customer = null;
-        try {
-            customer = reader.readLine();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+    public PhoneBill parse() throws IOException, ParserException {
+        String customer = reader.readLine();
         if (customer == null) {
-            throw new ParserException("Missing customer");
+            throw new ParserException("Missing customer name");
         }
 
         PhoneBill bill = new PhoneBill(customer);
-
         String line;
-        while (true) {
-            try {
-                if ((line = reader.readLine()) == null) break;
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+        while ((line = reader.readLine()) != null) {
             String[] parts = line.split(" ");
             if (parts.length != 8) {
                 throw new ParserException("Malformed phone call entry: " + line);
             }
-            String caller = parts[0];
-            String callee = parts[1];
-            String startDate = parts[2] + " " + parts[3] + " " + parts[4];
-            String endDate = parts[5] + " " + parts[6] + " " + parts[7];
 
-            LocalDateTime start = LocalDateTime.parse(startDate, formatter);
-            LocalDateTime end = LocalDateTime.parse(endDate, formatter);
+            try {
+                String caller = parts[0];
+                String callee = parts[1];
+                String startDate = parts[2] + " " + parts[3] + " " + parts[4];
+                String endDate = parts[5] + " " + parts[6] + " " + parts[7];
 
-            bill.addPhoneCall(new PhoneCall(caller, callee, start, end));
+                LocalDateTime start = LocalDateTime.parse(startDate, formatter);
+                LocalDateTime end = LocalDateTime.parse(endDate, formatter);
+
+                bill.addPhoneCall(new PhoneCall(caller, callee, start, end));
+            } catch (DateTimeParseException ex) {
+                throw new ParserException("Invalid date/time format in phone call entry: " + line);
+            }
         }
-        try {
-            this.reader.close();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+
         return bill;
     }
 }

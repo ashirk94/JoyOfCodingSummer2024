@@ -66,6 +66,7 @@ public class Project3 {
 
         int i = 0;
 
+        // Process options first
         while (i < args.length && args[i].startsWith("-")) {
             switch (args[i]) {
                 case "-print":
@@ -100,14 +101,14 @@ public class Project3 {
             i++;
         }
 
-        // Checks if there are enough remaining arguments for positional parameters
+        // Check if there are enough remaining arguments for positional parameters
         if (args.length - i < 8) {
             System.err.println("Missing required arguments\n");
             printUsage();
             return;
         }
 
-        // Processing positional arguments
+        // Process positional arguments
         customer = args[i++];
         callerNumber = args[i++];
         calleeNumber = args[i++];
@@ -121,13 +122,13 @@ public class Project3 {
         startDateTime = startDate + " " + startTime + " " + startPeriod;
         endDateTime = endDate + " " + endTime + " " + endPeriod;
 
-        // Validating phone numbers
+        // Validate phone numbers first
         if (!isValidPhoneNumber(callerNumber) || !isValidPhoneNumber(calleeNumber)) {
             System.err.println("Invalid phone number format");
             return;
         }
 
-        // If textFile is specified, checks customer name from file
+        // If textFile is specified, check customer name from file
         if (textFile != null) {
             File file = new File(textFile);
             if (file.exists()) {
@@ -135,7 +136,7 @@ public class Project3 {
                     TextParser parser = new TextParser(reader);
                     PhoneBill bill = parser.parse();
 
-                    // Checking customer name
+                    // Check customer name
                     if (!bill.getCustomer().equals(customer)) {
                         System.err.println("Customer name in file does not match specified customer. Expected: " + bill.getCustomer() + ", Provided: " + customer);
                         return;
@@ -149,7 +150,7 @@ public class Project3 {
             }
         }
 
-        // Validating date and time
+        // Validate date and time
         if (!isValidDateTime(startDateTime)) {
             System.err.println("Invalid start date/time format");
             return;
