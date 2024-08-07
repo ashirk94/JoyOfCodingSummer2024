@@ -22,14 +22,6 @@ public class Project3 {
      * @param args Command line arguments
      */
     public static void main(String[] args) {
-        // Checks for null arguments array
-        if (args == null) {
-            System.err.println("Error: Arguments cannot be null");
-            printUsage();
-            return;
-        }
-
-        // Checking for README flag first
         for (String arg : args) {
             if (arg.equals("-README")) {
                 printREADME();
@@ -37,7 +29,6 @@ public class Project3 {
             }
         }
 
-        // Processes other arguments
         try {
             processArgs(args);
         } catch (RuntimeException | IOException | ParserException e) {
@@ -55,6 +46,12 @@ public class Project3 {
      */
     @VisibleForTesting
     static void processArgs(String[] args) throws IOException, ParserException {
+        if (args.length == 0) {
+            System.err.println("Missing command line arguments");
+            printUsage();
+            return;
+        }
+
         boolean printCall = false;
         String textFile = null;
         String prettyFile = null;
@@ -64,93 +61,60 @@ public class Project3 {
         String startDateTime = null;
         String endDateTime = null;
 
-        int i = 0;
-
-        // Process options first
-        while (i < args.length && args[i].startsWith("-")) {
-            switch (args[i]) {
-                case "-print":
-                    printCall = true;
-                    break;
-                case "-textFile":
-                    if (i + 1 < args.length) {
-                        textFile = args[++i];
-                    } else {
-                        System.err.println("Missing file name after -textFile");
-                        printUsage();
-                        return;
-                    }
-                    break;
-                case "-pretty":
-                    if (i + 1 < args.length) {
-                        prettyFile = args[++i];
-                    } else {
-                        System.err.println("Missing file name after -pretty");
-                        printUsage();
-                        return;
-                    }
-                    break;
-                case "-README":
-                    printREADME();
-                    return;
-                default:
-                    System.err.println("Unknown command line option: " + args[i]);
+        for (int i = 0; i < args.length; i++) {
+            String arg = args[i];
+            if (arg.equals("-print")) {
+                printCall = true;
+            } else if (arg.equals("-textFile")) {
+                if (i + 1 < args.length) {
+                    textFile = args[++i];
+                } else {
+                    System.err.println("Missing file name after -textFile");
                     printUsage();
                     return;
+                }
+            } else if (arg.equals("-pretty")) {
+                if (i + 1 < args.length) {
+                    prettyFile = args[++i];
+                } else {
+                    System.err.println("Missing file name after -pretty");
+                    printUsage();
+                    return;
+                }
+            } else if (arg.startsWith("-")) {
+                System.err.println("Unknown command line option: " + arg);
+                printUsage();
+                return;
+            } else {
+                if (customer == null) {
+                    customer = arg;
+                } else if (callerNumber == null) {
+                    callerNumber = arg;
+                } else if (calleeNumber == null) {
+                    calleeNumber = arg;
+                } else if (startDateTime == null) {
+                    startDateTime = arg + " " + args[++i] + " " + args[++i].toUpperCase(Locale.ENGLISH);
+                } else if (endDateTime == null) {
+                    endDateTime = arg + " " + args[++i] + " " + args[++i].toUpperCase(Locale.ENGLISH);
+                } else {
+                    System.err.println("Extraneous command line argument: " + arg);
+                    printUsage();
+                    return;
+                }
             }
-            i++;
         }
 
-        // Check if there are enough remaining arguments for positional parameters
-        if (args.length - i < 8) {
-            System.err.println("Missing required arguments\n");
+        if (customer == null || callerNumber == null || calleeNumber == null || startDateTime == null || endDateTime == null) {
+            System.err.println("Missing required command line arguments");
             printUsage();
             return;
         }
 
-        // Process positional arguments
-        customer = args[i++];
-        callerNumber = args[i++];
-        calleeNumber = args[i++];
-        String startDate = args[i++];
-        String startTime = args[i++];
-        String startPeriod = args[i++].toUpperCase(Locale.ENGLISH); // Convert to uppercase
-        String endDate = args[i++];
-        String endTime = args[i++];
-        String endPeriod = args[i++].toUpperCase(Locale.ENGLISH); // Convert to uppercase
-
-        startDateTime = startDate + " " + startTime + " " + startPeriod;
-        endDateTime = endDate + " " + endTime + " " + endPeriod;
-
-        // Validate phone numbers first
         if (!isValidPhoneNumber(callerNumber) || !isValidPhoneNumber(calleeNumber)) {
             System.err.println("Invalid phone number format");
             return;
         }
 
-        // If textFile is specified, check customer name from file
-        if (textFile != null) {
-            File file = new File(textFile);
-            if (file.exists()) {
-                try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
-                    TextParser parser = new TextParser(reader);
-                    PhoneBill bill = parser.parse();
-
-                    // Check customer name
-                    if (!bill.getCustomer().equals(customer)) {
-                        System.err.println("Customer name in file does not match specified customer. Expected: " + bill.getCustomer() + ", Provided: " + customer);
-                        return;
-                    }
-                } catch (IOException | ParserException e) {
-                    System.err.println("Could not read from text file: " + e.getMessage());
-                    return;
-                }
-            } else {
-                System.out.println("File not found. Creating a new file: " + textFile);
-            }
-        }
-
-        // Validate date and time
         if (!isValidDateTime(startDateTime)) {
             System.err.println("Invalid start date/time format");
             return;
@@ -164,12 +128,32 @@ public class Project3 {
         LocalDateTime start = parseDateTime(startDateTime);
         LocalDateTime end = parseDateTime(endDateTime);
 
-        if (isEndTimeBeforeStartTime(start, end)) {
+        if (end.isBefore(start)) {
             System.err.println("End time cannot be before start time");
             return;
         }
 
         PhoneBill bill = new PhoneBill(customer);
+        if (textFile != null) {
+            File file = new File(textFile);
+            if (file.exists()) {
+                try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+                    TextParser parser = new TextParser(reader);
+                    bill = parser.parse();
+
+                    if (!bill.getCustomer().equals(customer)) {
+                        System.err.println("Customer name in file does not match specified customer. Expected: " + bill.getCustomer() + ", Provided: " + customer);
+                        return;
+                    }
+                } catch (IOException | ParserException e) {
+                    System.err.println("Could not read from text file: " + e.getMessage());
+                    return;
+                }
+            } else {
+                System.out.println("File not found. Creating a new file: " + textFile);
+            }
+        }
+
         PhoneCall call = new PhoneCall(callerNumber, calleeNumber, start, end);
         bill.addPhoneCall(call);
 
@@ -219,7 +203,6 @@ public class Project3 {
             LocalDateTime.parse(dateTimeString, formatter);
             return true;
         } catch (DateTimeParseException e) {
-            System.err.println("Invalid date/time: " + dateTimeString);
             return false;
         }
     }
@@ -233,18 +216,6 @@ public class Project3 {
     @VisibleForTesting
     static LocalDateTime parseDateTime(String dateTimeString) {
         return LocalDateTime.parse(dateTimeString, formatter);
-    }
-
-    /**
-     * Checks if the end time is before the start time.
-     *
-     * @param startDateTime The start date-time string
-     * @param endDateTime The end date-time string
-     * @return true if the end time is before the start time, false otherwise
-     */
-    @VisibleForTesting
-    static boolean isEndTimeBeforeStartTime(LocalDateTime startDateTime, LocalDateTime endDateTime) {
-        return endDateTime.isBefore(startDateTime);
     }
 
     /**
@@ -266,11 +237,17 @@ public class Project3 {
      * Prints the usage information for the program.
      */
     private static void printUsage() {
-        System.out.println("Usage: java -jar phonebill-1.0.0.jar [options] <customer> <caller> <callee> <startDate> <startTime> <startPeriod> <endDate> <endTime> <endPeriod>");
-        System.out.println("Options:");
-        System.out.println("  -print              Print the phone call details");
-        System.out.println("  -textFile <file>    Specify a text file for phone bill data");
-        System.out.println("  -pretty <file>      Specify a file for pretty printing output");
-        System.out.println("  -README             Print README and exit");
+        System.out.println("usage: java -jar target/phonebill-1.0.0.jar [options] <args>");
+        System.out.println("    args are (in this order):");
+        System.out.println("        customer        The person whose phone bill we’re modeling");
+        System.out.println("        callerNumber    Phone number of the caller (format: nnn-nnn-nnnn)");
+        System.out.println("        calleeNumber    Phone number of the person who was called (format: nnn-nnn-nnnn)");
+        System.out.println("        begin           Date and time the call began (format: mm/dd/yyyy hh:mm am/pm)");
+        System.out.println("        end             Date and time the call ended (format: mm/dd/yyyy hh:mm am/pm)");
+        System.out.println("    options are (options may appear in any order):");
+        System.out.println("        -textFile file  Specifies the file to read/write the phone bill");
+        System.out.println("        -print          Prints a description of the new phone call");
+        System.out.println("        -pretty file    Pretty print the phone bill to a text file or - for standard out");
+        System.out.println("        -README         Prints a README for this project and exits");
     }
 }

@@ -8,6 +8,7 @@ import java.nio.file.Paths;
 
 import edu.pdx.cs.joy.ParserException;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 public class Project3Test {
@@ -358,15 +359,12 @@ public class Project3Test {
         assertTrue(errContent.toString().contains("Invalid phone number format"));
     }
 
+
     @Test
     public void testMissingArguments() throws ParserException, IOException {
-        String[] args = {
-                "-textFile", "alans/alans.txt",
-                "Project3", "123-456-7890", "345-134-6134",
-                "01/04/2024", "10:00", "am"
-        };
+        String[] args = {};
         Project3.processArgs(args);
-        assertTrue(errContent.toString().contains("Missing required arguments"));
+        assertTrue(errContent.toString().contains("Missing"));
     }
 
     @Test
@@ -421,7 +419,7 @@ public class Project3Test {
         Project3.main(args);
 
         String errOutput = errContent.toString().trim();
-        assertTrue(errOutput.contains("Missing required arguments"));
+        assertEquals("Missing required command line arguments", errOutput);
 
         System.setErr(originalErr);
     }

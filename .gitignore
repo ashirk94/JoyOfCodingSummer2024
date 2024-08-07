@@ -45,12 +45,4 @@ dependency-reduced-pom.xml
 .vscode/
 
 # printing files
-phonebill/newbill.txt
-phonebill/prettybill.txt
-phonebill/pretty.txt
-phonebill/bill.txt
-testfile.txt
-
-
-phonebill/alans/testDump.txt
 phonebill/alans/alans.txt
