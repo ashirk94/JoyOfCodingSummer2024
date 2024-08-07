@@ -9,7 +9,7 @@ import java.util.Locale;
  */
 public class PrettyPrinter {
     private final PrintWriter writer;
-    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy hh:mm a", Locale.US);
+    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy h:mm a", Locale.US);
 
     /**
      * Creates a new <code>PrettyPrinter</code> that writes to the specified writer.

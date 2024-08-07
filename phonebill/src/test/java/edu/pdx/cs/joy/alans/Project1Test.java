@@ -7,12 +7,14 @@ import java.io.InputStreamReader;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.nullValue;
+
 import org.junit.jupiter.api.Test;
 
 /**
@@ -51,20 +53,28 @@ class Project1Test {
     assertThat(Project1.isValidPhoneNumber(invalidNumber3), is(false));
   }
 
-//  @Test
-//  void validDateTimeIsAccepted() {
-//    String validDateTime = "07/16/2024 02:00 PM";
-//    assertThat(Project1.isValidDateTime(validDateTime), is(true));
-//  }
-//
-//  @Test
-//  void invalidDateTimeIsRejected() {
-//    String invalidDateTime1 = "7/16/24 2:00 PM";
-//    String invalidDateTime2 = "07-16-2024 14:00";
-//
-//    assertThat(Project1.isValidDateTime(invalidDateTime1), is(false));
-//    assertThat(Project1.isValidDateTime(invalidDateTime2), is(false));
-//  }
+  @Test
+  void validDateTimeIsAccepted() {
+    String validDate = "07/16/2024";
+    String validTime = "02:00 PM";
+    boolean result = Project1.isValidDateTime(validDate, validTime);
+    assertEquals(true, result, "Expected valid date and time to be accepted");
+  }
+
+  @Test
+  void invalidDateTimeIsRejected() {
+    String invalidDate1 = "7/16/24";
+    String invalidDate2 = "07-16-2024";
+    String invalidTime = "14:00";
+
+    boolean result1 = Project1.isValidDateTime(invalidDate1, "02:00 PM");
+    boolean result2 = Project1.isValidDateTime(invalidDate2, "02:00 PM");
+    boolean result3 = Project1.isValidDateTime("07/16/2024", invalidTime);
+
+    assertEquals(false, result1, "Expected invalid date to be rejected");
+    assertEquals(false, result2, "Expected invalid date to be rejected");
+    assertEquals(false, result3, "Expected invalid time to be rejected");
+  }
 
   @Test
   void missingArgumentsThrowsException() {
@@ -74,13 +84,13 @@ class Project1Test {
 
   @Test
   void invalidPhoneNumberThrowsException() {
-    String[] args = {"Alan Shirk", "111", "222", "05/12/2022 01:45 PM", "05/12/2022 02:45 PM", "-print"};
+    String[] args = {"Alan Shirk", "111", "222", "05/12/2022", "01:45 PM", "05/12/2022", "02:45 PM"};
     assertThrows(RuntimeException.class, () -> Project1.processArgs(args));
   }
 
   @Test
   void validArgumentsDoNotThrowException() {
-    String[] args = {"Alan Shirk", "234-567-8901", "987-654-3210", "05/12/2022 01:45 PM", "05/12/2022 02:45 PM", "-print"};
+    String[] args = {"Alan Shirk", "234-567-8901", "987-654-3210", "05/12/2022", "01:45 PM", "05/12/2022", "02:45 PM", "-print"};
     Project1.main(args);
   }
 }

@@ -5,13 +5,13 @@ import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Locale;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class PhoneCallTest {
     private PhoneCall call;
-    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy hh:mm a");
+    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy h:mm a", Locale.US);
 
     @BeforeEach
     void setUp() {
@@ -22,14 +22,14 @@ public class PhoneCallTest {
 
     @Test
     void testGetBeginTimeString() {
-        String expected = "7/16/2024 2:00 PM";
+        String expected = "07/16/2024 2:00 PM";
         String actual = call.getBeginTimeString().replace("\u202F", " ");
         assertEquals(expected, actual);
     }
 
     @Test
     void testGetEndTimeString() {
-        String expected = "7/16/2024 3:00 PM";
+        String expected = "07/16/2024 3:00 PM";
         String actual = call.getEndTimeString().replace("\u202F", " ");
         assertEquals(expected, actual);
     }
@@ -64,18 +64,21 @@ public class PhoneCallTest {
 
     @Test
     void testPhoneCallDuration() {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy hh:mm a");
-        PhoneCall call = new PhoneCall("111-111-1111", "222-222-2222", LocalDateTime.parse("07/15/2024 10:00 AM", formatter), LocalDateTime.parse("07/15/2024 11:00 AM", formatter));
+        PhoneCall call = new PhoneCall("111-111-1111", "222-222-2222",
+                LocalDateTime.parse("07/15/2024 10:00 AM", formatter),
+                LocalDateTime.parse("07/15/2024 11:00 AM", formatter));
         assertEquals(60, call.getDurationMinutes());
     }
 
     @Test
     void testPhoneCallComparisonWithSameTime() {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy hh:mm a");
-        PhoneCall call1 = new PhoneCall("111-111-1111", "222-222-2222", LocalDateTime.parse("07/15/2024 10:00 AM", formatter), LocalDateTime.parse("07/15/2024 11:00 AM", formatter));
-        PhoneCall call2 = new PhoneCall("333-333-3333", "444-444-4444", LocalDateTime.parse("07/15/2024 10:00 AM", formatter), LocalDateTime.parse("07/15/2024 11:00 AM", formatter));
+        PhoneCall call1 = new PhoneCall("111-111-1111", "222-222-2222",
+                LocalDateTime.parse("07/15/2024 10:00 AM", formatter),
+                LocalDateTime.parse("07/15/2024 11:00 AM", formatter));
+        PhoneCall call2 = new PhoneCall("333-333-3333", "444-444-4444",
+                LocalDateTime.parse("07/15/2024 10:00 AM", formatter),
+                LocalDateTime.parse("07/15/2024 11:00 AM", formatter));
 
         assertTrue(call1.compareTo(call2) < 0);
     }
-
 }

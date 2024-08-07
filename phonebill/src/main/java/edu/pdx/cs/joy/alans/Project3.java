@@ -14,7 +14,7 @@ import edu.pdx.cs.joy.ParserException;
  * The main class for Project3, which processes command line arguments, manages phone bills and phone calls, and handles file operations.
  */
 public class Project3 {
-    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy hh:mm a", Locale.US);
+    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy h:mm a", Locale.US);
 
     /**
      * The main method for Project3.
@@ -66,12 +66,6 @@ public class Project3 {
 
         int i = 0;
 
-        // Ignore the first argument (command name) if it is present
-        if (args.length > 0 && args[0].equals("Project3")) {
-            i++;
-        }
-
-        // Process options first
         while (i < args.length && args[i].startsWith("-")) {
             switch (args[i]) {
                 case "-print":
@@ -106,14 +100,14 @@ public class Project3 {
             i++;
         }
 
-        // Check if there are enough remaining arguments for positional parameters
+        // Checks if there are enough remaining arguments for positional parameters
         if (args.length - i < 8) {
             System.err.println("Missing required arguments\n");
             printUsage();
             return;
         }
 
-        // Process positional arguments
+        // Processing positional arguments
         customer = args[i++];
         callerNumber = args[i++];
         calleeNumber = args[i++];
@@ -127,11 +121,35 @@ public class Project3 {
         startDateTime = startDate + " " + startTime + " " + startPeriod;
         endDateTime = endDate + " " + endTime + " " + endPeriod;
 
+        // Validating phone numbers
         if (!isValidPhoneNumber(callerNumber) || !isValidPhoneNumber(calleeNumber)) {
             System.err.println("Invalid phone number format");
             return;
         }
 
+        // If textFile is specified, checks customer name from file
+        if (textFile != null) {
+            File file = new File(textFile);
+            if (file.exists()) {
+                try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+                    TextParser parser = new TextParser(reader);
+                    PhoneBill bill = parser.parse();
+
+                    // Checking customer name
+                    if (!bill.getCustomer().equals(customer)) {
+                        System.err.println("Customer name in file does not match specified customer. Expected: " + bill.getCustomer() + ", Provided: " + customer);
+                        return;
+                    }
+                } catch (IOException | ParserException e) {
+                    System.err.println("Could not read from text file: " + e.getMessage());
+                    return;
+                }
+            } else {
+                System.out.println("File not found. Creating a new file: " + textFile);
+            }
+        }
+
+        // Validating date and time
         if (!isValidDateTime(startDateTime)) {
             System.err.println("Invalid start date/time format");
             return;
@@ -151,27 +169,6 @@ public class Project3 {
         }
 
         PhoneBill bill = new PhoneBill(customer);
-
-        if (textFile != null) {
-            File file = new File(textFile);
-            if (file.exists()) {
-                try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
-                    TextParser parser = new TextParser(reader);
-                    bill = parser.parse();
-                } catch (IOException | ParserException e) {
-                    System.err.println("Could not read from text file: " + e.getMessage());
-                    return;
-                }
-
-                if (!bill.getCustomer().equals(customer)) {
-                    System.err.println("Customer name in file does not match specified customer. Expected: " + bill.getCustomer() + ", Provided: " + customer);
-                    return;
-                }
-            } else {
-                System.out.println("File not found. Creating a new file: " + textFile);
-            }
-        }
-
         PhoneCall call = new PhoneCall(callerNumber, calleeNumber, start, end);
         bill.addPhoneCall(call);
 
@@ -206,11 +203,7 @@ public class Project3 {
      */
     @VisibleForTesting
     static boolean isValidPhoneNumber(String phoneNumber) {
-        if (!phoneNumber.matches("\\d{3}-\\d{3}-\\d{4}")) {
-            System.err.println("Invalid phone number: " + phoneNumber);
-            return false;
-        }
-        return true;
+        return phoneNumber.matches("\\d{3}-\\d{3}-\\d{4}");
     }
 
     /**
@@ -225,6 +218,7 @@ public class Project3 {
             LocalDateTime.parse(dateTimeString, formatter);
             return true;
         } catch (DateTimeParseException e) {
+            System.err.println("Invalid date/time: " + dateTimeString);
             return false;
         }
     }
@@ -271,7 +265,7 @@ public class Project3 {
      * Prints the usage information for the program.
      */
     private static void printUsage() {
-        System.out.println("Usage: java -jar phonebill-1.0.0.jar Project3 [options] <customer> <caller> <callee> <startDate> <startTime> <startPeriod> <endDate> <endTime> <endPeriod>");
+        System.out.println("Usage: java -jar phonebill-1.0.0.jar [options] <customer> <caller> <callee> <startDate> <startTime> <startPeriod> <endDate> <endTime> <endPeriod>");
         System.out.println("Options:");
         System.out.println("  -print              Print the phone call details");
         System.out.println("  -textFile <file>    Specify a text file for phone bill data");

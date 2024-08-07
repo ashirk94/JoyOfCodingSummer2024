@@ -3,6 +3,7 @@ package edu.pdx.cs.joy.alans;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.time.format.DateTimeFormatter;
+import java.util.Locale;
 
 import edu.pdx.cs.joy.PhoneBillDumper;
 
@@ -11,7 +12,7 @@ import edu.pdx.cs.joy.PhoneBillDumper;
  */
 public class TextDumper implements PhoneBillDumper<PhoneBill> {
   private final PrintWriter writer;
-  private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy hh:mm a");
+  private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy h:mm a",  Locale.US);
 
   /**
    * Constructs a new TextDumper that writes to the given Writer.

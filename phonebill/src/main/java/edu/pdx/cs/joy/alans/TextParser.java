@@ -14,7 +14,7 @@ import edu.pdx.cs.joy.PhoneBillParser;
  */
 public class TextParser implements PhoneBillParser<PhoneBill> {
     private final BufferedReader reader;
-    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy hh:mm a", Locale.ROOT);
+    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy h:mm a", Locale.US);
 
     /**
      * Constructs a new TextParser that reads from the given Reader.

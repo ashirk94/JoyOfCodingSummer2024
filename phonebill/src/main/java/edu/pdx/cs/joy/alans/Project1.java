@@ -17,7 +17,8 @@ import com.google.common.annotations.VisibleForTesting;
  * prints a description of the PhoneCall. It also can print the README.
  */
 public class Project1 {
-    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy hh:mm a");
+  private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy h:mm a");
+
   /**
    * Uses a regular expression to check if the phone number is valid.
    *
@@ -30,7 +31,7 @@ public class Project1 {
   }
 
   /**
-   * Uses a regular expression to check if the date and time are both valid.
+   * Validates the format of date and time.
    *
    * @param date The date to validate.
    * @param time The time to validate.
@@ -38,7 +39,12 @@ public class Project1 {
    */
   @VisibleForTesting
   static boolean isValidDateTime(String date, String time) {
-    return date.matches("\\d{1,2}/\\d{1,2}/\\d{4}") && time.matches("\\d{1,2}:\\d{2}");
+    try {
+      LocalDateTime.parse(date + " " + time, formatter);
+      return true;
+    } catch (Exception e) {
+      return false;
+    }
   }
 
   /**
@@ -79,17 +85,25 @@ public class Project1 {
     String customer = arguments.get(0);
     String callerNumber = arguments.get(1);
     String calleeNumber = arguments.get(2);
-    LocalDateTime beginTime = LocalDateTime.parse(args[3] + " " + args[4], formatter);
-    LocalDateTime endTime = LocalDateTime.parse(args[5] + " " + args[6], formatter);
+    String startDate = arguments.get(3);
+    String startTime = arguments.get(4) + " " + arguments.get(5);
+    String endDate = arguments.get(6);
+    String endTime = arguments.get(7) + " " + arguments.get(8);
 
     if (!isValidPhoneNumber(callerNumber) || !isValidPhoneNumber(calleeNumber)) {
       System.err.println("Invalid phone number format");
       throw new RuntimeException("Invalid phone number format");
     }
 
+    if (!isValidDateTime(startDate, startTime) || !isValidDateTime(endDate, endTime)) {
+      System.err.println("Invalid date/time format");
+      throw new RuntimeException("Invalid date/time format");
+    }
 
     PhoneBill bill = new PhoneBill(customer);
-    PhoneCall call = new PhoneCall(callerNumber, calleeNumber, beginTime, endTime);
+    LocalDateTime beginTime = LocalDateTime.parse(startDate + " " + startTime, formatter);
+    LocalDateTime endTimeParsed = LocalDateTime.parse(endDate + " " + endTime, formatter);
+    PhoneCall call = new PhoneCall(callerNumber, calleeNumber, beginTime, endTimeParsed);
     bill.addPhoneCall(call);
 
     if (printCall) {

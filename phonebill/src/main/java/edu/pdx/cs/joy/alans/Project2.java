@@ -20,7 +20,7 @@ import edu.pdx.cs.joy.ParserException;
  * The main class for Project2, which processes command line arguments, manages phone bills and phone calls, and handles file operations.
  */
 public class Project2 {
-    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy hh:mm a");
+    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy h:mm a");
 
     /**
      * The main method for Project2.
@@ -54,7 +54,7 @@ public class Project2 {
     @VisibleForTesting
     static void processArgs(String[] args) throws IOException, ParserException {
         if (args.length == 0) {
-            System.err.println("Missing command line arguments\n");
+            System.err.println("Missing command line arguments");
             printUsage();
             return;
         }

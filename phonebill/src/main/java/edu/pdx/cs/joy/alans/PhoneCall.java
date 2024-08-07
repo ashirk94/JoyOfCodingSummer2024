@@ -19,7 +19,7 @@ public class PhoneCall extends AbstractPhoneCall implements Comparable<PhoneCall
     private final String callee;
     private final LocalDateTime beginTime;
     private final LocalDateTime endTime;
-    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("M/d/yyyy h:mm a", Locale.US);
+    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy h:mm a", Locale.US);
 
     /**
      * Creates a new <code>PhoneCall</code> with the specified details.
