@@ -46,3 +46,5 @@ dependency-reduced-pom.xml
 
 # printing files
 phonebill/alans/alans.txt
+testDump.txt
+testParse.txt
