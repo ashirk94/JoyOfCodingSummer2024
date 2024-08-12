@@ -5,8 +5,10 @@ import edu.pdx.cs.joy.web.HttpRequestHelper;
 
 import java.io.IOException;
 import java.io.PrintStream;
-import java.io.StringWriter;
-import java.util.Map;
+import java.io.PrintWriter;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Locale;
 
 /**
  * The main class that parses the command line and communicates with the
@@ -15,103 +17,169 @@ import java.util.Map;
 public class Project4 {
 
     public static final String MISSING_ARGS = "Missing command line arguments";
+    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy h:mm a", Locale.US);
 
     public static void main(String... args) {
         String hostName = null;
         String portString = null;
-        String word = null;
-        String definition = null;
+        String customer = null;
+        String caller = null;
+        String callee = null;
+        String beginDate = null;
+        String beginTime = null;
+        String beginAmPm = null;
+        String endDate = null;
+        String endTime = null;
+        String endAmPm = null;
+        boolean search = false;
+        boolean print = false;
 
-        for (String arg : args) {
-            if (hostName == null) {
-                hostName = arg;
+        if (args.length == 0) {
+            usage("Missing command line arguments");
+            return;
+        }
 
-            } else if ( portString == null) {
-                portString = arg;
+        if (args.length > 20) {
+            usage("Too many command line arguments");
+            return;
+        }
 
-            } else if (word == null) {
-                word = arg;
-
-            } else if (definition == null) {
-                definition = arg;
-
+        for (int i = 0; i < args.length; i++) {
+            String arg = args[i];
+            if (arg.equals("-host")) {
+                hostName = args[++i];
+            } else if (arg.equals("-port")) {
+                portString = args[++i];
+            } else if (arg.equals("-search")) {
+                search = true;
+            } else if (arg.equals("-print")) {
+                print = true;
+            } else if (customer == null) {
+                customer = arg;
+            } else if (caller == null) {
+                caller = arg;
+            } else if (callee == null) {
+                callee = arg;
+            } else if (beginDate == null) {
+                beginDate = arg;
+            } else if (beginTime == null) {
+                beginTime = arg;
+            } else if (beginAmPm == null) {
+                beginAmPm = arg.toUpperCase();
+            } else if (endDate == null) {
+                endDate = arg;
+            } else if (endTime == null) {
+                endTime = arg;
+            } else if (endAmPm == null) {
+                endAmPm = arg.toUpperCase();
             } else {
-                usage("Extraneous command line argument: " + arg);
+                System.err.println("Unexpected argument: " + arg);
+                return;
             }
         }
 
-        if (hostName == null) {
-            usage( MISSING_ARGS );
+        String begin = beginDate + " " + beginTime + " " + beginAmPm;
+        String end = endDate + " " + endTime + " " + endAmPm;
 
-        } else if ( portString == null) {
-            usage( "Missing port" );
+        if (customer == null) {
+            System.err.println("** Missing customer name");
+            return;
+        }
+
+        if (hostName == null) {
+            System.err.println("** Missing host name");
+            return;
+        }
+
+        if (portString == null) {
+            System.err.println("** Missing port");
+            return;
         }
 
         int port;
         try {
-            port = Integer.parseInt( portString );
-            
+            port = Integer.parseInt(portString);
         } catch (NumberFormatException ex) {
-            usage("Port \"" + portString + "\" must be an integer");
+            System.err.println("** Port \"" + portString + "\" must be an integer");
             return;
         }
 
-        PhoneBillRestClient client = new PhoneBillRestClient(hostName, port);
+        PhoneBillRestClient client = createPhoneBillRestClient(hostName, port);
 
-        String message;
+        PrettyPrinter printer = new PrettyPrinter(new PrintWriter(System.out));
+
         try {
-            if (word == null) {
-                // Print all word/definition pairs
-                Map<String, String> dictionary = client.getAllDictionaryEntries();
-                StringWriter sw = new StringWriter();
-                PrettyPrinter pretty = new PrettyPrinter(sw);
-                pretty.dump(dictionary);
-                message = sw.toString();
-
-            } else if (definition == null) {
-                // Print all dictionary entries
-                message = PrettyPrinter.formatDictionaryEntry(word, client.getDefinition(word));
-
+            if (search) {
+                if (begin == null || end == null) {
+                    usage("Both begin and end dates are required for search");
+                }
+                LocalDateTime start = LocalDateTime.parse(begin, formatter);
+                LocalDateTime endDateTime = LocalDateTime.parse(end, formatter);
+                PhoneBill bill = client.getPhoneBillForCustomer(customer);
+                printer.printPhoneCallsBetween(bill, start, endDateTime);
             } else {
-                // Post the word/definition pair
-                client.addDictionaryEntry(word, definition);
-                message = Messages.definedWordAs(word, definition);
+                if (caller != null && callee != null && begin != null && end != null) {
+                    LocalDateTime start = LocalDateTime.parse(begin, formatter);
+                    LocalDateTime endDateTime = LocalDateTime.parse(end, formatter);
+
+                    try {
+                        client.addPhoneCallToBill(customer, new PhoneCall(caller, callee, start, endDateTime));
+                    } catch (HttpRequestHelper.RestException e) {
+                        System.err.println("Error: " + e.getMessage());
+                        return;
+                    }
+                    if (print) {
+                        System.out.println("Added new phone call:");
+                        printer.printPhoneCall(new PhoneCall(caller, callee, start, endDateTime));
+                    }
+                } else {
+                    PhoneBill bill = client.getPhoneBillForCustomer(customer);
+                    printer.printPhoneBill(bill);
+                }
             }
-
-        } catch (IOException | ParserException ex ) {
+        } catch (IOException | ParserException ex) {
             error("While contacting server: " + ex.getMessage());
-            return;
         }
-
-        System.out.println(message);
     }
 
-    private static void error( String message )
-    {
+
+    /**
+     * Creates a new instance of PhoneBillRestClient. This method can be overridden in tests to return a mock.
+     *
+     * @param hostName The name of the host
+     * @param port The port number
+     * @return A new instance of PhoneBillRestClient
+     */
+    protected static PhoneBillRestClient createPhoneBillRestClient(String hostName, int port) {
+        return new PhoneBillRestClient(hostName, port);
+    }
+
+    private static void error(String message) {
         PrintStream err = System.err;
         err.println("** " + message);
     }
 
     /**
-     * Prints usage information for this program and exits
+     * Prints usage information for this program and exits.
+     *
      * @param message An error message to print
      */
-    private static void usage( String message )
-    {
+    private static void usage(String message) {
         PrintStream err = System.err;
         err.println("** " + message);
         err.println();
-        err.println("usage: java Project4 host port [word] [definition]");
+        err.println("usage: java Project4 -host hostname -port port [options] <args>");
         err.println("  host         Host of web server");
         err.println("  port         Port of web server");
-        err.println("  word         Word in dictionary");
-        err.println("  definition   Definition of word");
+        err.println("  -search      Search for phone calls within a time range");
+        err.println("  -print       Prints a description of the new phone call");
+        err.println("  customer     Customer name");
+        err.println("  callerNumber Phone number of caller");
+        err.println("  calleeNumber Phone number of person who was called");
+        err.println("  begin        Date and time call began (MM/dd/yyyy h:mm a)");
+        err.println("  end          Date and time call ended (MM/dd/yyyy h:mm a)");
         err.println();
-        err.println("This simple program posts words and their definitions");
-        err.println("to the server.");
-        err.println("If no definition is specified, then the word's definition");
-        err.println("is printed.");
-        err.println("If no word is specified, all dictionary entries are printed");
+        err.println("This program interacts with a phone bill server.");
         err.println();
     }
 }

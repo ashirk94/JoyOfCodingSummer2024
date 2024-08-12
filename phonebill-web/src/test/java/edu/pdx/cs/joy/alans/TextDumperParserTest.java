@@ -5,8 +5,7 @@ import org.junit.jupiter.api.Test;
 
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.util.Collections;
-import java.util.Map;
+import java.time.LocalDateTime;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -14,27 +13,28 @@ import static org.hamcrest.Matchers.equalTo;
 public class TextDumperParserTest {
 
   @Test
-  void emptyMapCanBeDumpedAndParsed() throws ParserException {
-    Map<String, String> map = Collections.emptyMap();
-    Map<String, String> read = dumpAndParse(map);
-    assertThat(read, equalTo(map));
+  void emptyPhoneBillCanBeDumpedAndParsed() throws ParserException {
+    PhoneBill phoneBill = new PhoneBill("Customer Name");
+    PhoneBill read = dumpAndParse(phoneBill);
+    assertThat(read, equalTo(phoneBill));
   }
 
-  private Map<String, String> dumpAndParse(Map<String, String> map) throws ParserException {
+  private PhoneBill dumpAndParse(PhoneBill phoneBill) throws ParserException {
     StringWriter sw = new StringWriter();
     TextDumper dumper = new TextDumper(sw);
-    dumper.dump(map);
+    dumper.dump(phoneBill);
 
     String text = sw.toString();
 
     TextParser parser = new TextParser(new StringReader(text));
-    return parser.parse();
+    return parser.parse(phoneBill.getCustomer());
   }
 
   @Test
   void dumpedTextCanBeParsed() throws ParserException {
-    Map<String, String> map = Map.of("one", "1", "two", "2");
-    Map<String, String> read = dumpAndParse(map);
-    assertThat(read, equalTo(map));
+    PhoneBill phoneBill = new PhoneBill("Customer Name");
+    phoneBill.addPhoneCall(new PhoneCall("123-456-7890", "098-765-4321", LocalDateTime.now().minusMinutes(5), LocalDateTime.now()));
+    PhoneBill read = dumpAndParse(phoneBill);
+    assertThat(read, equalTo(phoneBill));
   }
 }

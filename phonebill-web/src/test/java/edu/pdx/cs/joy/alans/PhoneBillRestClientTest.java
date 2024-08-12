@@ -6,6 +6,8 @@ import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.io.StringWriter;
+import java.net.HttpURLConnection;
+import java.time.LocalDateTime;
 import java.util.Map;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -17,21 +19,25 @@ import static org.mockito.Mockito.when;
 public class PhoneBillRestClientTest {
 
   @Test
-  void getAllDictionaryEntriesPerformsHttpGetWithNoParameters() throws ParserException, IOException {
-    Map<String, String> dictionary = Map.of("One", "1", "Two", "2");
+  void getPhoneBillForCustomerPerformsHttpGetWithCustomerName() throws ParserException, IOException {
+    String customerName = "Customer Name";
+    PhoneBill expectedBill = new PhoneBill(customerName);
+    expectedBill.addPhoneCall(new PhoneCall("123-456-7890", "098-765-4321", LocalDateTime.now().minusMinutes(5), LocalDateTime.now()));
 
-    HttpRequestHelper http = mock(HttpRequestHelper.class);
-    when(http.get(eq(Map.of()))).thenReturn(dictionaryAsText(dictionary));
+    HttpRequestHelper mockHttp = mock(HttpRequestHelper.class);
+    when(mockHttp.get(eq(Map.of("customer", customerName)))).thenReturn(phoneBillAsText(expectedBill));
 
-    PhoneBillRestClient client = new PhoneBillRestClient(http);
+    PhoneBillRestClient client = new PhoneBillRestClient("localhost", 8080, mockHttp);
 
-    assertThat(client.getAllDictionaryEntries(), equalTo(dictionary));
+    PhoneBill actualBill = client.getPhoneBillForCustomer(customerName);
+    assertThat(actualBill, equalTo(expectedBill));
   }
 
-  private HttpRequestHelper.Response dictionaryAsText(Map<String, String> dictionary) {
+  private HttpRequestHelper.Response phoneBillAsText(PhoneBill bill) {
     StringWriter writer = new StringWriter();
-    new TextDumper(writer).dump(dictionary);
-
+    new TextDumper(writer).dump(bill);
     return new HttpRequestHelper.Response(writer.toString());
   }
+
 }
+

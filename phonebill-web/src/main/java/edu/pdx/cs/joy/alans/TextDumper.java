@@ -2,7 +2,7 @@ package edu.pdx.cs.joy.alans;
 
 import java.io.PrintWriter;
 import java.io.Writer;
-import java.util.Map;
+import java.util.Collection;
 
 public class TextDumper {
   private final Writer writer;
@@ -11,14 +11,14 @@ public class TextDumper {
     this.writer = writer;
   }
 
-  public void dump(Map<String, String> dictionary) {
-    try (
-      PrintWriter pw = new PrintWriter(this.writer)
-    ){
-      for (Map.Entry<String, String> entry : dictionary.entrySet()) {
-        pw.println(entry.getKey() + " : " + entry.getValue());
+  public void dump(PhoneBill phoneBill) {
+    try (PrintWriter pw = new PrintWriter(this.writer)) {
+      pw.println("Customer: " + phoneBill.getCustomer());
+      Collection<PhoneCall> calls = phoneBill.getPhoneCalls();
+      for (PhoneCall call : calls) {
+        pw.println(call.getCaller() + " : " + call.getCallee() + " : " +
+                call.getBeginTimeString() + " : " + call.getEndTimeString());
       }
-
       pw.flush();
     }
   }

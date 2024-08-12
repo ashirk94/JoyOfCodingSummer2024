@@ -6,79 +6,134 @@ import edu.pdx.cs.joy.web.HttpRequestHelper;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.net.HttpURLConnection;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
-import static edu.pdx.cs.joy.web.HttpRequestHelper.Response;
-import static edu.pdx.cs.joy.web.HttpRequestHelper.RestException;
-import static java.net.HttpURLConnection.HTTP_OK;
-
-/**
- * A helper class for accessing the rest client.  Note that this class provides
- * an example of how to make gets and posts to a URL.  You'll need to change it
- * to do something other than just send dictionary entries.
- */
 public class PhoneBillRestClient {
 
-    private static final String WEB_APP = "phonebill";
-    private static final String SERVLET = "calls";
+  private static final String WEB_APP = "phonebill";
+  private static final String SERVLET = "calls";
+  private final String hostName;
+  private final int port;
 
   private final HttpRequestHelper http;
 
+  // Constructor for production use
+  public PhoneBillRestClient(String hostName, int port) {
+    this(hostName, port, null);
+  }
 
-    /**
-     * Creates a client to the Phone Bil REST service running on the given host and port
-     * @param hostName The name of the host
-     * @param port The port
-     */
-    public PhoneBillRestClient( String hostName, int port )
-    {
-      this(new HttpRequestHelper(String.format("http://%s:%d/%s/%s", hostName, port, WEB_APP, SERVLET)));
-    }
-
-  @VisibleForTesting
-  PhoneBillRestClient(HttpRequestHelper http) {
-    this.http = http;
+  // Constructor for testing, allowing injection of a mock HttpRequestHelper
+  public PhoneBillRestClient(String hostName, int port, HttpRequestHelper httpRequestHelper) {
+    this.hostName = hostName;
+    this.port = port;
+    this.http = httpRequestHelper != null ? httpRequestHelper : new HttpRequestHelper(String.format("http://%s:%d/%s/%s", hostName, port, WEB_APP, SERVLET));
   }
 
   /**
-   * Returns all dictionary entries from the server
+   * Sends a POST request to the server with the given parameters.
+   *
+   * @param path The path to the resource (e.g., "phonebill/calls")
+   * @param parameters The parameters to include in the POST request
+   * @return The server's response
+   * @throws IOException If an I/O error occurs
    */
-  public Map<String, String> getAllDictionaryEntries() throws IOException, ParserException {
-    Response response = http.get(Map.of());
-    throwExceptionIfNotOkayHttpStatus(response);
-
-    TextParser parser = new TextParser(new StringReader(response.getContent()));
-    return parser.parse();
+  private HttpRequestHelper.Response post(String path, Map<String, String> parameters) throws IOException {
+    String url = String.format("http://%s:%d/%s", hostName, port, path);
+    HttpRequestHelper helper = new HttpRequestHelper(url);
+    return helper.post(parameters);
   }
 
-  /**
-   * Returns the definition for the given word
-   */
-  public String getDefinition(String word) throws IOException, ParserException {
-    Response response = http.get(Map.of(PhoneBillServlet.WORD_PARAMETER, word));
+  public PhoneBill getPhoneBillForCustomer(String customer) throws IOException, ParserException {
+    HttpRequestHelper.Response response = http.get(Map.of("customer", customer));
     throwExceptionIfNotOkayHttpStatus(response);
-    String content = response.getContent();
 
-    TextParser parser = new TextParser(new StringReader(content));
-    return parser.parse().get(word);
+    if (response.getHttpStatusCode() == HttpURLConnection.HTTP_OK) {
+      String content = response.getContent();
+
+      return parsePhoneBill(customer, content);
+    } else {
+      throw new HttpRequestHelper.RestException(response.getHttpStatusCode(), "Unexpected response");
+    }
   }
 
-    public void addDictionaryEntry(String word, String definition) throws IOException {
-      Response response = http.post(Map.of(PhoneBillServlet.WORD_PARAMETER, word, PhoneBillServlet.DEFINITION_PARAMETER, definition));
-      throwExceptionIfNotOkayHttpStatus(response);
+  private void throwExceptionIfNotOkayHttpStatus(HttpRequestHelper.Response response) {
+    if (response.getHttpStatusCode() != HttpURLConnection.HTTP_OK) {
+      throw new HttpRequestHelper.RestException(response.getHttpStatusCode(), response.getContent());
     }
+  }
 
-  public void removeAllDictionaryEntries() throws IOException {
-      Response response = http.delete(Map.of());
-      throwExceptionIfNotOkayHttpStatus(response);
-    }
+  private PhoneBill parsePhoneBill(String customerName, String content) throws ParserException {
+    try {
+      if (content.startsWith("Phone call from")) {
+        PhoneBill phoneBill = new PhoneBill(customerName);
 
-    private void throwExceptionIfNotOkayHttpStatus(Response response) {
-      int code = response.getHttpStatusCode();
-      if (code != HTTP_OK) {
-        String message = response.getContent();
-        throw new RestException(code, message);
+        String[] lines = content.split("\n");
+        for (String line : lines) {
+          if (!line.trim().isEmpty()) {
+            PhoneCall call = parsePhoneCallFromLine(line);
+            phoneBill.addPhoneCall(call);
+          }
+        }
+
+        return phoneBill;
+      } else {
+        StringReader reader = new StringReader(content);
+        TextParser parser = new TextParser(reader);
+        return parser.parse(customerName);
       }
+    } catch (Exception e) {
+      throw new ParserException("Failed to parse phone bill from server response", e);
     }
+  }
 
+  private PhoneCall parsePhoneCallFromLine(String line) {
+    String[] parts = line.split(" ");
+    String caller = parts[3];
+    String callee = parts[5];
+    String beginDate = parts[7];
+    String beginTime = parts[8] + " " + parts[9];
+    String endDate = parts[11];
+    String endTime = parts[12] + " " + parts[13];
+
+    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy h:mm a", Locale.US);
+    LocalDateTime begin = LocalDateTime.parse(beginDate + " " + beginTime, formatter);
+    LocalDateTime end = LocalDateTime.parse(endDate + " " + endTime, formatter);
+
+    return new PhoneCall(caller, callee, begin, end);
+  }
+
+
+  public void addPhoneCallToBill(String customer, PhoneCall call) throws IOException {
+    Map<String, String> params = new HashMap<>();
+    params.put("customer", customer);
+    params.put("callerNumber", call.getCaller());
+    params.put("calleeNumber", call.getCallee());
+    params.put("beginDate", call.getBeginTimeString().split(" ")[0]);
+    params.put("beginTime", call.getBeginTimeString().split(" ")[1]);
+    params.put("beginAmPm", call.getBeginTimeString().split(" ")[2]);
+    params.put("endDate", call.getEndTimeString().split(" ")[0]);
+    params.put("endTime", call.getEndTimeString().split(" ")[1]);
+    params.put("endAmPm", call.getEndTimeString().split(" ")[2]);
+
+    HttpRequestHelper.Response response = post("phonebill/calls", params);
+
+    throwExceptionIfNotOkayHttpStatus(response);
+  }
+
+
+  public void removeAllPhoneBills() throws IOException {
+    HttpRequestHelper.Response response = http.delete(Map.of());
+    throwExceptionIfNotOkayHttpStatus(response);
+
+    if (response.getHttpStatusCode() == HttpURLConnection.HTTP_OK) {
+      System.out.println("All phone bills have been successfully removed.");
+    } else {
+      throw new HttpRequestHelper.RestException(response.getHttpStatusCode(), "Failed to remove all phone bills");
+    }
+  }
 }
