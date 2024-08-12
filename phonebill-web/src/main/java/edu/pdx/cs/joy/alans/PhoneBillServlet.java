@@ -10,16 +10,33 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import com.google.common.annotations.VisibleForTesting;
 
+/**
+ * A servlet that manages phone bills for customers. This servlet allows adding phone calls to a phone bill
+ * and retrieving phone calls for a customer, optionally filtering by a date range.
+ */
 public class PhoneBillServlet extends HttpServlet {
 
     private final Map<String, PhoneBill> phoneBillMap = new HashMap<>();
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy h:mm a", Locale.US);
 
+    /**
+     * Provides access to the internal phone bill map for testing purposes.
+     *
+     * @return A map of customer names to their respective phone bills.
+     */
     @VisibleForTesting
     Map<String, PhoneBill> getPhoneBillMap() {
         return this.phoneBillMap;
     }
 
+    /**
+     * Handles HTTP GET requests. Retrieves a customer's phone bill and optionally filters the phone calls
+     * by a specified date range.
+     *
+     * @param request  The HTTP request containing parameters for the customer and optional date range.
+     * @param response The HTTP response containing the list of phone calls or an error message.
+     * @throws IOException If an input or output error occurs while handling the request.
+     */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String customer = request.getParameter("customer");
@@ -62,8 +79,13 @@ public class PhoneBillServlet extends HttpServlet {
         response.setStatus(HttpServletResponse.SC_OK);
     }
 
-
-
+    /**
+     * Handles HTTP POST requests. Adds a new phone call to a customer's phone bill.
+     *
+     * @param request  The HTTP request containing parameters for the customer and phone call details.
+     * @param response The HTTP response indicating the result of the operation.
+     * @throws IOException If an input or output error occurs while handling the request.
+     */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String customer = request.getParameter("customer");

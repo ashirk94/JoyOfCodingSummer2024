@@ -1,6 +1,5 @@
 package edu.pdx.cs.joy.alans;
 
-import com.google.common.annotations.VisibleForTesting;
 import edu.pdx.cs.joy.ParserException;
 import edu.pdx.cs.joy.web.HttpRequestHelper;
 
@@ -13,21 +12,34 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
+/**
+ * A client that interacts with a phone bill web service using REST.
+ */
 public class PhoneBillRestClient {
 
   private static final String WEB_APP = "phonebill";
   private static final String SERVLET = "calls";
   private final String hostName;
   private final int port;
-
   private final HttpRequestHelper http;
 
-  // Constructor for production use
+  /**
+   * Constructs a PhoneBillRestClient for interacting with the web service.
+   *
+   * @param hostName The hostname of the server.
+   * @param port The port number on which the server is listening.
+   */
   public PhoneBillRestClient(String hostName, int port) {
     this(hostName, port, null);
   }
 
-  // Constructor for testing, allowing injection of a mock HttpRequestHelper
+  /**
+   * Constructs a PhoneBillRestClient with a mock HttpRequestHelper for testing.
+   *
+   * @param hostName The hostname of the server.
+   * @param port The port number on which the server is listening.
+   * @param httpRequestHelper A mock HttpRequestHelper.
+   */
   public PhoneBillRestClient(String hostName, int port, HttpRequestHelper httpRequestHelper) {
     this.hostName = hostName;
     this.port = port;
@@ -37,10 +49,10 @@ public class PhoneBillRestClient {
   /**
    * Sends a POST request to the server with the given parameters.
    *
-   * @param path The path to the resource (e.g., "phonebill/calls")
-   * @param parameters The parameters to include in the POST request
-   * @return The server's response
-   * @throws IOException If an I/O error occurs
+   * @param path The path to the resource (e.g., "phonebill/calls").
+   * @param parameters The parameters to include in the POST request.
+   * @return The server's response.
+   * @throws IOException If an I/O error occurs.
    */
   private HttpRequestHelper.Response post(String path, Map<String, String> parameters) throws IOException {
     String url = String.format("http://%s:%d/%s", hostName, port, path);
@@ -48,30 +60,49 @@ public class PhoneBillRestClient {
     return helper.post(parameters);
   }
 
+  /**
+   * Retrieves the phone bill for a specific customer from the server.
+   *
+   * @param customer The name of the customer.
+   * @return The PhoneBill object for the customer.
+   * @throws IOException If an I/O error occurs during the request.
+   * @throws ParserException If an error occurs while parsing the server's response.
+   */
   public PhoneBill getPhoneBillForCustomer(String customer) throws IOException, ParserException {
     HttpRequestHelper.Response response = http.get(Map.of("customer", customer));
     throwExceptionIfNotOkayHttpStatus(response);
 
     if (response.getHttpStatusCode() == HttpURLConnection.HTTP_OK) {
       String content = response.getContent();
-
       return parsePhoneBill(customer, content);
     } else {
       throw new HttpRequestHelper.RestException(response.getHttpStatusCode(), "Unexpected response");
     }
   }
 
+  /**
+   * Throws an exception if the HTTP status code of the response is not OK.
+   *
+   * @param response The HTTP response from the server.
+   */
   private void throwExceptionIfNotOkayHttpStatus(HttpRequestHelper.Response response) {
     if (response.getHttpStatusCode() != HttpURLConnection.HTTP_OK) {
       throw new HttpRequestHelper.RestException(response.getHttpStatusCode(), response.getContent());
     }
   }
 
+  /**
+   * Parses a PhoneBill from the server's response content.
+   *
+   * @param customerName The name of the customer.
+   * @param content The content returned by the server.
+   * @return The parsed PhoneBill object.
+   * @throws ParserException If an error occurs while parsing the content.
+   */
   private PhoneBill parsePhoneBill(String customerName, String content) throws ParserException {
     try {
       if (content.startsWith("Phone call from")) {
         PhoneBill phoneBill = new PhoneBill(customerName);
-
         String[] lines = content.split("\n");
         for (String line : lines) {
           if (!line.trim().isEmpty()) {
@@ -79,7 +110,6 @@ public class PhoneBillRestClient {
             phoneBill.addPhoneCall(call);
           }
         }
-
         return phoneBill;
       } else {
         StringReader reader = new StringReader(content);
@@ -91,6 +121,12 @@ public class PhoneBillRestClient {
     }
   }
 
+  /**
+   * Parses a PhoneCall from a line of text in the server's response.
+   *
+   * @param line A line of text representing a PhoneCall.
+   * @return The parsed PhoneCall object.
+   */
   private PhoneCall parsePhoneCallFromLine(String line) {
     String[] parts = line.split(" ");
     String caller = parts[3];
@@ -107,7 +143,13 @@ public class PhoneBillRestClient {
     return new PhoneCall(caller, callee, begin, end);
   }
 
-
+  /**
+   * Adds a PhoneCall to a customer's phone bill on the server.
+   *
+   * @param customer The name of the customer.
+   * @param call The PhoneCall to be added.
+   * @throws IOException If an I/O error occurs during the request.
+   */
   public void addPhoneCallToBill(String customer, PhoneCall call) throws IOException {
     Map<String, String> params = new HashMap<>();
     params.put("customer", customer);
@@ -121,11 +163,14 @@ public class PhoneBillRestClient {
     params.put("endAmPm", call.getEndTimeString().split(" ")[2]);
 
     HttpRequestHelper.Response response = post("phonebill/calls", params);
-
     throwExceptionIfNotOkayHttpStatus(response);
   }
 
-
+  /**
+   * Removes all phone bills from the server.
+   *
+   * @throws IOException If an I/O error occurs during the request.
+   */
   public void removeAllPhoneBills() throws IOException {
     HttpRequestHelper.Response response = http.delete(Map.of());
     throwExceptionIfNotOkayHttpStatus(response);

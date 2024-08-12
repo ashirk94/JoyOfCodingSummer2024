@@ -3,11 +3,10 @@ package edu.pdx.cs.joy.alans;
 import edu.pdx.cs.joy.ParserException;
 import edu.pdx.cs.joy.web.HttpRequestHelper;
 
-import java.io.IOException;
-import java.io.PrintStream;
-import java.io.PrintWriter;
+import java.io.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.Locale;
 
 /**
@@ -19,7 +18,33 @@ public class Project4 {
     public static final String MISSING_ARGS = "Missing command line arguments";
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy h:mm a", Locale.US);
 
+    /**
+     * The main method that drives the program. It parses command line arguments
+     * and communicates with the Phone Bill server.
+     *
+     * @param args The command line arguments
+     */
     public static void main(String... args) {
+        for (String arg : args) {
+            if (arg.equals("-README")) {
+                printREADME();
+                return;
+            }
+        }
+
+        Project4 project = new Project4();
+        int result = project.processArgs(args);
+        System.exit(result);
+    }
+
+    /**
+     * Processes command line arguments and executes the appropriate actions.
+     * This method handles error checking and avoids throwing exceptions from main.
+     *
+     * @param args The command line arguments
+     * @return 0 if the process completes successfully, 1 if an error occurs
+     */
+    public int processArgs(String... args) {
         String hostName = null;
         String portString = null;
         String customer = null;
@@ -35,13 +60,8 @@ public class Project4 {
         boolean print = false;
 
         if (args.length == 0) {
-            usage("Missing command line arguments");
-            return;
-        }
-
-        if (args.length > 20) {
-            usage("Too many command line arguments");
-            return;
+            usage(MISSING_ARGS);
+            return 1;
         }
 
         for (int i = 0; i < args.length; i++) {
@@ -73,75 +93,89 @@ public class Project4 {
             } else if (endAmPm == null) {
                 endAmPm = arg.toUpperCase();
             } else {
-                System.err.println("Unexpected argument: " + arg);
-                return;
+                error("Unexpected argument: " + arg);
+                return 1;
             }
         }
 
-        String begin = beginDate + " " + beginTime + " " + beginAmPm;
-        String end = endDate + " " + endTime + " " + endAmPm;
-
         if (customer == null) {
-            System.err.println("** Missing customer name");
-            return;
+            error("** Missing customer name");
+            return 1;
         }
 
         if (hostName == null) {
-            System.err.println("** Missing host name");
-            return;
+            error("** Missing host name");
+            return 1;
         }
 
         if (portString == null) {
-            System.err.println("** Missing port");
-            return;
+            error("** Missing port");
+            return 1;
         }
 
         int port;
         try {
             port = Integer.parseInt(portString);
         } catch (NumberFormatException ex) {
-            System.err.println("** Port \"" + portString + "\" must be an integer");
-            return;
+            error("** Port \"" + portString + "\" must be an integer");
+            return 1;
         }
 
-        PhoneBillRestClient client = createPhoneBillRestClient(hostName, port);
-
-        PrettyPrinter printer = new PrettyPrinter(new PrintWriter(System.out));
-
         try {
-            if (search) {
-                if (begin == null || end == null) {
-                    usage("Both begin and end dates are required for search");
-                }
-                LocalDateTime start = LocalDateTime.parse(begin, formatter);
-                LocalDateTime endDateTime = LocalDateTime.parse(end, formatter);
-                PhoneBill bill = client.getPhoneBillForCustomer(customer);
-                printer.printPhoneCallsBetween(bill, start, endDateTime);
-            } else {
-                if (caller != null && callee != null && begin != null && end != null) {
-                    LocalDateTime start = LocalDateTime.parse(begin, formatter);
-                    LocalDateTime endDateTime = LocalDateTime.parse(end, formatter);
+            PhoneBillRestClient client = createPhoneBillRestClient(hostName, port);
+            PrettyPrinter printer = new PrettyPrinter(new PrintWriter(System.out));
 
-                    try {
-                        client.addPhoneCallToBill(customer, new PhoneCall(caller, callee, start, endDateTime));
-                    } catch (HttpRequestHelper.RestException e) {
-                        System.err.println("Error: " + e.getMessage());
-                        return;
+            if (search) {
+                if (beginDate == null || beginTime == null || endDate == null || endTime == null) {
+                    // Check if dates are provided or not
+                    if (beginDate == null && endDate == null) {
+                        // No dates provided, pretty print the entire phone bill
+                        PhoneBill bill = client.getPhoneBillForCustomer(customer);
+                        printer.printPhoneBill(bill);
+                    } else {
+                        error("Both begin and end dates are required for search");
+                        return 1;
                     }
+                } else {
+                    try {
+                        String begin = beginDate + " " + beginTime + " " + beginAmPm;
+                        String end = endDate + " " + endTime + " " + endAmPm;
+                        LocalDateTime start = LocalDateTime.parse(begin, formatter);
+                        LocalDateTime endDateTime = LocalDateTime.parse(end, formatter);
+                        PhoneBill bill = client.getPhoneBillForCustomer(customer);
+                        printer.printPhoneCallsBetween(bill, start, endDateTime);
+                    } catch (DateTimeParseException e) {
+                        error("Invalid date/time format: " + e.getMessage());
+                        return 1;
+                    }
+                }
+            } else {
+                if (caller != null && callee != null && beginDate != null && endDate != null) {
+                    LocalDateTime start = LocalDateTime.parse(beginDate + " " + beginTime + " " + beginAmPm, formatter);
+                    LocalDateTime end = LocalDateTime.parse(endDate + " " + endTime + " " + endAmPm, formatter);
+                    client.addPhoneCallToBill(customer, new PhoneCall(caller, callee, start, end));
                     if (print) {
                         System.out.println("Added new phone call:");
-                        printer.printPhoneCall(new PhoneCall(caller, callee, start, endDateTime));
+                        printer.printPhoneCall(new PhoneCall(caller, callee, start, end));
                     }
                 } else {
                     PhoneBill bill = client.getPhoneBillForCustomer(customer);
                     printer.printPhoneBill(bill);
                 }
             }
-        } catch (IOException | ParserException ex) {
-            error("While contacting server: " + ex.getMessage());
+        } catch (DateTimeParseException e) {
+            error("Invalid date/time format: " + e.getMessage());
+            return 1;
+        } catch (IOException | ParserException e) {
+            error("While contacting server: " + e.getMessage());
+            return 1;
+        } catch (RuntimeException e) {
+            error("Runtime error: " + e.getMessage());
+            return 1;
         }
-    }
 
+        return 0;
+    }
 
     /**
      * Creates a new instance of PhoneBillRestClient. This method can be overridden in tests to return a mock.
@@ -154,9 +188,29 @@ public class Project4 {
         return new PhoneBillRestClient(hostName, port);
     }
 
+    /**
+     * Prints an error message to the standard error stream.
+     *
+     * @param message The error message to print
+     */
     private static void error(String message) {
         PrintStream err = System.err;
         err.println("** " + message);
+    }
+
+    /**
+     * Prints the README text from the README file.
+     */
+    private static void printREADME() {
+        try (InputStream readme = Project4.class.getResourceAsStream("/edu/pdx/cs/joy/alans/README.txt");
+             BufferedReader reader = new BufferedReader(new InputStreamReader(readme))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                System.out.println(line);
+            }
+        } catch (IOException e) {
+            System.err.println("Error reading README: " + e.getMessage());
+        }
     }
 
     /**
@@ -178,8 +232,6 @@ public class Project4 {
         err.println("  calleeNumber Phone number of person who was called");
         err.println("  begin        Date and time call began (MM/dd/yyyy h:mm a)");
         err.println("  end          Date and time call ended (MM/dd/yyyy h:mm a)");
-        err.println();
-        err.println("This program interacts with a phone bill server.");
         err.println();
     }
 }
