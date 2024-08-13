@@ -1,9 +1,6 @@
 package edu.pdx.cs.joy.alans;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.TreeSet;
+import java.util.*;
 
 import edu.pdx.cs.joy.AbstractPhoneBill;
 
@@ -24,6 +21,7 @@ public class PhoneBill extends AbstractPhoneBill<PhoneCall> {
   public PhoneBill(String customer) {
     this.customer = customer;
   }
+
   /**
    * Getter for the customer String.
    */
@@ -33,11 +31,13 @@ public class PhoneBill extends AbstractPhoneBill<PhoneCall> {
   }
 
   /**
-   * Adds a PhoneCall to the phoneCalls ArrayList.
+   * Adds a PhoneCall to the phoneCalls ArrayList and sorts the list by the start time and caller number.
    */
   @Override
   public void addPhoneCall(PhoneCall call) {
     this.calls.add(call);
+    // Sorts the calls list after adding a new call
+    this.calls.sort(Comparator.comparing(PhoneCall::getBeginTime).thenComparing(PhoneCall::getCaller));
   }
 
   /**

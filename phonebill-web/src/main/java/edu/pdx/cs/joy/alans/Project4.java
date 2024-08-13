@@ -190,7 +190,7 @@ public class Project4 {
      *
      * @param message The error message to print
      */
-    private static void error(String message) {
+    public static void error(String message) {
         PrintStream err = System.err;
         err.println("** " + message);
     }

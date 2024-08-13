@@ -2,9 +2,7 @@ package edu.pdx.cs.joy.alans;
 
 import com.google.common.annotations.VisibleForTesting;
 
-import java.io.PrintStream;
 import java.io.PrintWriter;
-import java.io.Writer;
 import java.time.LocalDateTime;
 import java.util.Collection;
 
@@ -12,7 +10,7 @@ import java.util.Collection;
  * This class provides methods to pretty-print phone bills and phone calls.
  */
 public class PrettyPrinter {
-  private final Writer writer;
+  private final PrintWriter writer;
 
   public PrettyPrinter(PrintWriter writer) {
     this.writer = writer;
@@ -24,19 +22,17 @@ public class PrettyPrinter {
    * @param phoneBill The PhoneBill to print
    */
   public void printPhoneBill(PhoneBill phoneBill) {
-    try (PrintWriter pw = new PrintWriter(this.writer)) {
-      pw.println("Customer: " + phoneBill.getCustomer());
-      Collection<PhoneCall> calls = phoneBill.getPhoneCalls();
-      if (calls.isEmpty()) {
-        pw.println("No phone calls in this phone bill.");
-      } else {
-        pw.println("Phone calls:");
-        for (PhoneCall call : calls) {
-          pw.println(formatPhoneCall(call));
-        }
+    writer.println("Customer: " + phoneBill.getCustomer());
+    Collection<PhoneCall> calls = phoneBill.getPhoneCalls();
+    if (calls.isEmpty()) {
+      writer.println("No phone calls in this phone bill.");
+    } else {
+      writer.println("Phone calls:");
+      for (PhoneCall call : calls) {
+        writer.println(formatPhoneCall(call));
       }
-      pw.flush();
     }
+    writer.flush();
   }
 
   /**

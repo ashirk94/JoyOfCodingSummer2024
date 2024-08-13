@@ -3,6 +3,8 @@ package edu.pdx.cs.joy.alans;
 import edu.pdx.cs.joy.ParserException;
 import org.junit.jupiter.api.*;
 import org.mockito.MockedStatic;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.mockStatic;
 
 import java.io.ByteArrayOutputStream;
@@ -43,6 +45,35 @@ class Project4IT {
     void tearDown() {
         System.setErr(originalErr);
         System.setOut(originalOut);
+    }
+
+    @Test
+    void testCreatePhoneBillRestClient() {
+        PhoneBillRestClient client = Project4.createPhoneBillRestClient(HOSTNAME, Integer.parseInt(PORT));
+        assertNotNull(client);
+    }
+
+    @Test
+    void testErrorMethod() {
+        // Redirect System.err to a ByteArrayOutputStream
+        ByteArrayOutputStream errStream = new ByteArrayOutputStream();
+        System.setErr(new PrintStream(errStream));
+
+        Project4.error("Test error message");
+
+        assertThat(errStream.toString(), containsString("** Test error message"));
+
+        // Reset System.err to its original stream
+        System.setErr(System.err);
+    }
+
+    @Test
+    void testInvalidPortNumberThrowsException() {
+        Project4 project = new Project4();
+        int result = project.processArgs("-host", HOSTNAME, "-port", "invalidPort", "Customer");
+
+        assertEquals(1, result);
+        assertThat(errContent.toString(), containsString("Port \"invalidPort\" must be an integer"));
     }
 
     @Test
@@ -184,4 +215,59 @@ class Project4IT {
             assertThat(outContent.toString(), containsString("Duration: 91 minutes"));
         }
     }
+
+    @Test
+    void testMissingCommandLineArguments() {
+        Project4 project = new Project4();
+        int result = project.processArgs(); // No arguments passed
+
+        // Assert that the process exits with an error code
+        assertEquals(1, result);
+
+        // Check that the missing arguments error message was printed
+        assertThat(errContent.toString(), containsString("Missing command line arguments"));
+    }
+
+    @Test
+    void testUnexpectedArgument() {
+        Project4 project = new Project4();
+        int result = project.processArgs("-host", HOSTNAME, "-port", PORT, "Customer", "-unexpected");
+
+        assertEquals(1, result);
+    }
+
+    @Test
+    void testValidPhoneCallAddition() throws IOException, ParserException {
+        try (MockedStatic<Project4> mocked = mockStatic(Project4.class)) {
+            mocked.when(() -> Project4.createPhoneBillRestClient(anyString(), anyInt()))
+                    .thenReturn(mockClient);
+
+            PhoneBill mockBill = new PhoneBill("Customer");
+            when(mockClient.getPhoneBillForCustomer(anyString())).thenReturn(mockBill);
+
+            Project4 project = new Project4();
+            int result = project.processArgs("-host", HOSTNAME, "-port", PORT, "Customer",
+                    "503-245-2345", "765-389-1273", "02/27/2024", "9:30", "AM", "02/27/2024", "10:30", "AM", "-print");
+
+            // Assert that the process completes successfully
+            assertEquals(0, result);
+
+            // Check that the phone call was added and printed
+            assertThat(outContent.toString(), containsString("Added new phone call:"));
+        }
+    }
+
+    @Test
+    void testInvalidDateFormatHandling() {
+        Project4 project = new Project4();
+        int result = project.processArgs("-host", HOSTNAME, "-port", PORT, "Customer",
+                "503-245-2345", "765-389-1273", "02/ZZ/2024", "9:30", "AM", "02/27/2024", "10:30", "AM");
+
+        // Assert that the process exits with an error code
+        assertEquals(1, result);
+
+        // Check that the invalid date format error message was printed
+        assertThat(errContent.toString(), containsString("Invalid date/time format"));
+    }
+
 }

@@ -30,8 +30,19 @@ public class PhoneBillRestClientTest {
     PhoneBillRestClient client = new PhoneBillRestClient("localhost", 8080, mockHttp);
 
     PhoneBill actualBill = client.getPhoneBillForCustomer(customerName);
-    assertThat(actualBill, equalTo(expectedBill));
+
+    // Add detailed messages in the assertion
+    assertThat("Expected customer name: " + expectedBill.getCustomer() + ", but was: " + actualBill.getCustomer(),
+            actualBill.getCustomer(), equalTo(expectedBill.getCustomer()));
+
+    assertThat("Expected number of phone calls: " + expectedBill.getPhoneCalls().size() +
+                    ", but was: " + actualBill.getPhoneCalls().size(),
+            actualBill.getPhoneCalls().size(), equalTo(expectedBill.getPhoneCalls().size()));
+
+    assertThat("Phone bill contents do not match",
+            actualBill, equalTo(expectedBill));
   }
+
 
   private HttpRequestHelper.Response phoneBillAsText(PhoneBill bill) {
     StringWriter writer = new StringWriter();
