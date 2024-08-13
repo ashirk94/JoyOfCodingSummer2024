@@ -1,7 +1,6 @@
 package edu.pdx.cs.joy.alans;
 
 import edu.pdx.cs.joy.ParserException;
-import edu.pdx.cs.joy.web.HttpRequestHelper;
 
 import java.io.*;
 import java.time.LocalDateTime;
@@ -25,16 +24,8 @@ public class Project4 {
      * @param args The command line arguments
      */
     public static void main(String... args) {
-        for (String arg : args) {
-            if (arg.equals("-README")) {
-                printREADME();
-                return;
-            }
-        }
-
         Project4 project = new Project4();
         int result = project.processArgs(args);
-        System.exit(result);
     }
 
     /**
@@ -64,37 +55,52 @@ public class Project4 {
             return 1;
         }
 
+        for (String arg : args) {
+            if (arg.equals("-README")) {
+                printREADME();
+                return 0;
+            }
+        }
+
         for (int i = 0; i < args.length; i++) {
             String arg = args[i];
-            if (arg.equals("-host")) {
-                hostName = args[++i];
-            } else if (arg.equals("-port")) {
-                portString = args[++i];
-            } else if (arg.equals("-search")) {
-                search = true;
-            } else if (arg.equals("-print")) {
-                print = true;
-            } else if (customer == null) {
-                customer = arg;
-            } else if (caller == null) {
-                caller = arg;
-            } else if (callee == null) {
-                callee = arg;
-            } else if (beginDate == null) {
-                beginDate = arg;
-            } else if (beginTime == null) {
-                beginTime = arg;
-            } else if (beginAmPm == null) {
-                beginAmPm = arg.toUpperCase();
-            } else if (endDate == null) {
-                endDate = arg;
-            } else if (endTime == null) {
-                endTime = arg;
-            } else if (endAmPm == null) {
-                endAmPm = arg.toUpperCase();
-            } else {
-                error("Unexpected argument: " + arg);
-                return 1;
+            switch (arg) {
+                case "-host":
+                    hostName = args[++i];
+                    break;
+                case "-port":
+                    portString = args[++i];
+                    break;
+                case "-search":
+                    search = true;
+                    break;
+                case "-print":
+                    print = true;
+                    break;
+                default:
+                    if (customer == null) {
+                        customer = arg;
+                    } else if (caller == null) {
+                        caller = arg;
+                    } else if (callee == null) {
+                        callee = arg;
+                    } else if (beginDate == null) {
+                        beginDate = arg;
+                    } else if (beginTime == null) {
+                        beginTime = arg;
+                    } else if (beginAmPm == null) {
+                        beginAmPm = arg.toUpperCase();
+                    } else if (endDate == null) {
+                        endDate = arg;
+                    } else if (endTime == null) {
+                        endTime = arg;
+                    } else if (endAmPm == null) {
+                        endAmPm = arg.toUpperCase();
+                    } else {
+                        error("Unexpected argument: " + arg);
+                        return 1;
+                    }
+                    break;
             }
         }
 
@@ -126,28 +132,19 @@ public class Project4 {
             PrettyPrinter printer = new PrettyPrinter(new PrintWriter(System.out));
 
             if (search) {
-                if (beginDate == null || beginTime == null || endDate == null || endTime == null) {
-                    // Check if dates are provided or not
-                    if (beginDate == null && endDate == null) {
-                        // No dates provided, pretty print the entire phone bill
-                        PhoneBill bill = client.getPhoneBillForCustomer(customer);
-                        printer.printPhoneBill(bill);
-                    } else {
-                        error("Both begin and end dates are required for search");
-                        return 1;
-                    }
+                if (beginDate == null || beginTime == null || beginAmPm == null || endDate == null || endTime == null || endAmPm == null) {
+                    // No dates provided, pretty print the entire phone bill
+                    PhoneBill bill = client.getPhoneBillForCustomer(customer);
+                    printer.printPhoneBill(bill);
                 } else {
-                    try {
-                        String begin = beginDate + " " + beginTime + " " + beginAmPm;
-                        String end = endDate + " " + endTime + " " + endAmPm;
-                        LocalDateTime start = LocalDateTime.parse(begin, formatter);
-                        LocalDateTime endDateTime = LocalDateTime.parse(end, formatter);
-                        PhoneBill bill = client.getPhoneBillForCustomer(customer);
-                        printer.printPhoneCallsBetween(bill, start, endDateTime);
-                    } catch (DateTimeParseException e) {
-                        error("Invalid date/time format: " + e.getMessage());
-                        return 1;
-                    }
+                    String begin = beginDate + " " + beginTime + " " + beginAmPm;
+                    String end = endDate + " " + endTime + " " + endAmPm;
+
+                    LocalDateTime start = LocalDateTime.parse(begin, formatter);
+                    LocalDateTime endDateTime = LocalDateTime.parse(end, formatter);
+
+                    PhoneBill bill = client.getPhoneBillForCustomer(customer);
+                    printer.printPhoneCallsBetween(bill, start, endDateTime);
                 }
             } else {
                 if (caller != null && callee != null && beginDate != null && endDate != null) {
