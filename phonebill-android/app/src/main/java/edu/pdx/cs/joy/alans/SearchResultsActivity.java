@@ -1,6 +1,7 @@
 package edu.pdx.cs.joy.alans;
 
 import android.os.Bundle;
+import android.view.View;
 import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -22,5 +23,9 @@ public class SearchResultsActivity extends AppCompatActivity {
         } else {
             searchResultsTextView.setText("No results to display");
         }
+    }
+
+    public void goBack(View view) {
+        finish();
     }
 }

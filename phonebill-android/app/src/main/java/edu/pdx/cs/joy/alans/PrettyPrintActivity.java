@@ -1,6 +1,7 @@
 package edu.pdx.cs.joy.alans;
 
 import android.os.Bundle;
+import android.view.View;
 import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -18,5 +19,9 @@ public class PrettyPrintActivity extends AppCompatActivity {
 
         // Displays the data
         prettyPrintTextView.setText(prettyPrintData);
+    }
+
+    public void goBack(View view) {
+        finish();
     }
 }

@@ -3,6 +3,8 @@ package edu.pdx.cs.joy.alans;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ScrollView;
@@ -276,4 +278,33 @@ public class MainActivity extends AppCompatActivity {
     private LocalDateTime parseDateTime(String dateTimeString) {
         return LocalDateTime.parse(dateTimeString, formatter);
     }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        if (id == R.id.action_readme) {
+            showReadmeDialog();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void showReadmeDialog() {
+        String readmeContent = "README for Project5\nAlan Shirk\n\n" +
+                "In this Android app you can add phone calls to a phone bill, search for calls by customer name and date, " +
+                "and pretty print the details of a customer's phone bill.";
+
+        new AlertDialog.Builder(this)
+                .setTitle("README")
+                .setMessage(readmeContent)
+                .setPositiveButton("OK", null)
+                .show();
+    }
+
 }
