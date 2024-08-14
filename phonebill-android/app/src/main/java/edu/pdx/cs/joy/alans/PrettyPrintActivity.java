@@ -13,10 +13,10 @@ public class PrettyPrintActivity extends AppCompatActivity {
 
         TextView prettyPrintTextView = findViewById(R.id.prettyPrintTextView);
 
-        // Retrieve the data from the intent
+        // Retrieves the data from the intent
         String prettyPrintData = getIntent().getStringExtra("prettyPrintData");
 
-        // Display the data
+        // Displays the data
         prettyPrintTextView.setText(prettyPrintData);
     }
 }

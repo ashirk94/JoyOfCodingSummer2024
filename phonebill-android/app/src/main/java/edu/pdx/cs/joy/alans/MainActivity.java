@@ -163,7 +163,7 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        // Start PrettyPrintActivity and pass the pretty print data
+        // Starts PrettyPrintActivity and passes the pretty print data
         Intent intent = new Intent(this, PrettyPrintActivity.class);
         intent.putExtra("prettyPrintData", sb.toString());
         startActivity(intent);
@@ -223,7 +223,11 @@ public class MainActivity extends AppCompatActivity {
 
         for (PhoneCall call : calls) {
             if (!call.getBeginTime().isBefore(start) && !call.getBeginTime().isAfter(end)) {
-                sb.append(PrettyPrinter.formatPhoneCall(call)).append("\n");
+                sb.append("Caller: ").append(call.getCaller()).append("\n")
+                        .append("Callee: ").append(call.getCallee()).append("\n")
+                        .append("Start Time: ").append(call.getBeginTimeString()).append("\n")
+                        .append("End Time: ").append(call.getEndTimeString()).append("\n")
+                        .append("\n");
                 found = true;
             }
         }
@@ -232,8 +236,12 @@ public class MainActivity extends AppCompatActivity {
             sb.append("No phone calls found between ").append(start.format(formatter)).append(" and ").append(end.format(formatter));
         }
 
-        showResultDialog("Search Results", sb.toString());
+        // Starts SearchResultsActivity and passes the search results
+        Intent intent = new Intent(this, SearchResultsActivity.class);
+        intent.putExtra("searchResultsData", sb.toString());
+        startActivity(intent);
     }
+
 
     private void showResultDialog(String title, String message) {
         new AlertDialog.Builder(this)
