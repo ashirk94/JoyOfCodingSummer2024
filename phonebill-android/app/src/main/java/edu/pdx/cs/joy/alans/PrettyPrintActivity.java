@@ -1,0 +1,22 @@
+package edu.pdx.cs.joy.alans;
+
+import android.os.Bundle;
+import android.widget.TextView;
+import androidx.appcompat.app.AppCompatActivity;
+
+public class PrettyPrintActivity extends AppCompatActivity {
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_pretty_print);
+
+        TextView prettyPrintTextView = findViewById(R.id.prettyPrintTextView);
+
+        // Retrieve the data from the intent
+        String prettyPrintData = getIntent().getStringExtra("prettyPrintData");
+
+        // Display the data
+        prettyPrintTextView.setText(prettyPrintData);
+    }
+}

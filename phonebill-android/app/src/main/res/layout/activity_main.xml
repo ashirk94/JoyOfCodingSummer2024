@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:padding="16dp">
+
+    <!-- Title -->
+    <TextView
+        android:id="@+id/titleTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Alan's Phone Bill App"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:paddingBottom="24dp" />
+
+    <!-- Buttons -->
+    <Button
+        android:id="@+id/enterPhoneCallButton"
+        android:layout_width="250dp"
+        android:layout_height="wrap_content"
+        android:text="Add Phone Call"
+        android:backgroundTint="@android:color/holo_blue_light"
+        android:textColor="@android:color/white"
+        android:onClick="onEnterPhoneCallClicked" />
+
+    <Button
+        android:id="@+id/prettyPrintButton"
+        android:layout_width="250dp"
+        android:layout_height="wrap_content"
+        android:text="Pretty Print Phone Bill"
+        android:backgroundTint="@android:color/holo_blue_light"
+        android:textColor="@android:color/white"
+        android:onClick="onPrettyPrintClicked"
+        android:layout_marginTop="16dp" />
+
+    <Button
+        android:id="@+id/searchCallsButton"
+        android:layout_width="250dp"
+        android:layout_height="wrap_content"
+        android:text="Search Phone Calls"
+        android:backgroundTint="@android:color/holo_blue_light"
+        android:textColor="@android:color/white"
+        android:onClick="onSearchCallsClicked"
+        android:layout_marginTop="16dp" />
+
+</LinearLayout>
